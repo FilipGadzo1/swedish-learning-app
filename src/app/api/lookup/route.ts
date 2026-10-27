@@ -65,6 +65,18 @@ If partOfSpeech is "adverb" or "other", grammar must be {} (empty object).
 Respond with raw JSON only — no markdown code fences, no explanation.`;
 
 export async function POST(req: NextRequest) {
+  // Unlike /texts, /vocab, /grammar this route isn't covered by proxy.ts's
+  // middleware gate (it only matches page prefixes, not /api/*) — without
+  // this check anyone could hit it directly, trigger billable model calls,
+  // and write into the shared dictionary_cache table (readable/insertable
+  // by anyone per its RLS policy).
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+  const isGuest = req.cookies.get("guestMode")?.value === "1";
+  if (!userData.user && !isGuest) {
+    return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  }
+
   let word: unknown;
   try {
     const body = await req.json();
@@ -78,7 +90,6 @@ export async function POST(req: NextRequest) {
   }
 
   const key = word.trim().toLowerCase();
-  const supabase = await createClient();
 
   const { data: cached } = await supabase
     .from("dictionary_cache")

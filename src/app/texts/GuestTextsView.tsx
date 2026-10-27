@@ -1,32 +1,55 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { listGuestTexts, type GuestText } from "@/lib/guest";
-import TextList from "./TextList";
-import TextActions from "./TextActions";
+import Link from "next/link";
+import { listGuestTexts, listGuestVocab } from "@/lib/guest";
+import TextList, { type TextListItem } from "./TextList";
+import TextHero from "./TextHero";
+import { summarizeContent } from "./textSummary";
+
+type GuestTextsData = { rows: TextListItem[]; wordCount: number; dueCount: number };
 
 export default function GuestTextsView() {
-  const [texts, setTexts] = useState<GuestText[] | null>(null);
+  const [data, setData] = useState<GuestTextsData | null>(null);
 
   useEffect(() => {
     function load() {
-      setTexts(listGuestTexts());
+      const vocab = listGuestVocab();
+      const now = Date.now();
+      setData({
+        rows: listGuestTexts().map(({ content, ...t }) => ({
+          ...t,
+          ...summarizeContent(content),
+        })),
+        wordCount: vocab.length,
+        dueCount: vocab.filter((v) => new Date(v.dueAt).getTime() <= now).length,
+      });
     }
     load();
   }, []);
 
+  const textCount = data?.rows.length ?? 0;
+  const words = data?.wordCount ?? 0;
+  const due = data?.dueCount ?? 0;
+
   return (
-    <main className="mx-auto w-full max-w-4xl flex-1 p-6">
-      <h1 className="mb-4 font-serif text-xl font-semibold">Texts</h1>
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-        <div className="order-1 md:order-2">
-          <TextActions guest />
-        </div>
-        <hr className="order-2 my-2 border-0 border-t border-hairline md:hidden" />
-        <div className="order-3 md:order-1">
-          <TextList texts={texts ?? []} />
-        </div>
-      </div>
+    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 p-6 2xl:max-w-6xl">
+      <h1 className="flex flex-wrap items-baseline gap-x-2 font-serif text-xl font-semibold">
+        Texts
+        <span className="font-sans text-sm font-normal text-muted-foreground">
+          · {textCount} {textCount === 1 ? "text" : "texts"} · {words}{" "}
+          {words === 1 ? "word" : "words"} saved ·{" "}
+          {due > 0 ? (
+            <Link href="/vocab/drill" className="text-accent hover:underline">
+              {due} due for review
+            </Link>
+          ) : (
+            `${due} due for review`
+          )}
+        </span>
+      </h1>
+      <TextHero guest />
+      <TextList texts={data?.rows ?? []} />
     </main>
   );
 }

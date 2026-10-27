@@ -6,6 +6,7 @@ import { GUEST_COOKIE } from "@/lib/guest";
 import type { LookupData } from "@/app/texts/[id]/LookupPanelContent";
 import GuestVocabView from "./GuestVocabView";
 import VocabTableWithLookup from "./VocabTableWithLookup";
+import QuickLookup from "./QuickLookup";
 
 // Per-user data (auth + DB reads) — must run per-request, not be prerendered.
 export const instant = false;
@@ -38,14 +39,17 @@ export default async function VocabPage() {
   const dueCount = items.filter((i) => new Date(i.due_at) <= now).length;
 
   const header = (
-    <div className="mb-4 flex items-center justify-between">
-      <h1 className="font-serif text-xl font-semibold">Vocabulary</h1>
-      {dueCount > 0 && (
-        <Link href="/vocab/drill" className={buttonVariants()}>
-          Drill {dueCount} due word{dueCount === 1 ? "" : "s"}
-        </Link>
-      )}
-    </div>
+    <>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="font-serif text-xl font-semibold">Vocabulary</h1>
+        {dueCount > 0 && (
+          <Link href="/vocab/drill" className={buttonVariants()}>
+            Drill {dueCount} due word{dueCount === 1 ? "" : "s"}
+          </Link>
+        )}
+      </div>
+      <QuickLookup />
+    </>
   );
 
   if (items.length === 0) {
@@ -71,6 +75,7 @@ export default async function VocabPage() {
       meanings: lookup?.englishMeanings ?? [],
       isDue,
       dueLabel: isDue ? "Due now" : due.toLocaleDateString(),
+      dueAt: item.due_at,
       lookup,
     };
   });

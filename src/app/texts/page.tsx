@@ -1,9 +1,11 @@
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { GUEST_COOKIE } from "@/lib/guest";
 import GuestTextsView from "./GuestTextsView";
 import TextList from "./TextList";
-import TextActions from "./TextActions";
+import TextHero from "./TextHero";
+import { summarizeContent } from "./textSummary";
 
 // Per-user data (auth + DB reads) — must run per-request, not be prerendered.
 export const instant = false;
@@ -20,23 +22,45 @@ export default async function TextsPage() {
   }
 
   const supabase = await createClient();
-  const { data: texts } = await supabase
-    .from("texts")
-    .select("id, title, source, level, created_at")
-    .order("created_at", { ascending: false });
+  const [{ data: texts }, { count: wordCount }, { count: dueCount }] = await Promise.all([
+    supabase
+      .from("texts")
+      .select("id, title, source, level, created_at, content")
+      .order("created_at", { ascending: false }),
+    supabase.from("vocab_items").select("id", { count: "exact", head: true }),
+    supabase
+      .from("vocab_items")
+      .select("id", { count: "exact", head: true })
+      .lte("due_at", new Date().toISOString()),
+  ]);
+
+  // Only the derived excerpt/reading time reach the client, not full content.
+  const rows = (texts ?? []).map(({ content, ...t }) => ({
+    ...t,
+    ...summarizeContent(content ?? ""),
+  }));
+
+  const words = wordCount ?? 0;
+  const due = dueCount ?? 0;
 
   return (
-    <main className="mx-auto w-full max-w-4xl flex-1 p-6">
-      <h1 className="mb-4 font-serif text-xl font-semibold">Texts</h1>
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-        <div className="order-1 md:order-2">
-          <TextActions />
-        </div>
-        <hr className="order-2 my-2 border-0 border-t border-hairline md:hidden" />
-        <div className="order-3 md:order-1">
-          <TextList texts={texts ?? []} />
-        </div>
-      </div>
+    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 p-6 2xl:max-w-6xl">
+      <h1 className="flex flex-wrap items-baseline gap-x-2 font-serif text-xl font-semibold">
+        Texts
+        <span className="font-sans text-sm font-normal text-muted-foreground">
+          · {rows.length} {rows.length === 1 ? "text" : "texts"} · {words}{" "}
+          {words === 1 ? "word" : "words"} saved ·{" "}
+          {due > 0 ? (
+            <Link href="/vocab/drill" className="text-accent hover:underline">
+              {due} due for review
+            </Link>
+          ) : (
+            `${due} due for review`
+          )}
+        </span>
+      </h1>
+      <TextHero />
+      <TextList texts={rows} />
     </main>
   );
 }

@@ -6,6 +6,7 @@ import {
   AccordionItem,
   AccordionPanel,
   AccordionTrigger,
+  Button,
   Card,
   Table,
   TableBody,
@@ -22,6 +23,7 @@ export type VocabListRow = {
   meanings: string[];
   isDue: boolean;
   dueLabel: string;
+  dueAt: string;
   lookup: LookupData | null;
 };
 
@@ -35,6 +37,8 @@ const POS_GROUPS = [
 
 const KNOWN_POS = new Set<string>(["noun", "verb", "adjective", "adverb"]);
 
+type DueFilter = "all" | "due";
+
 export default function VocabTableWithLookup({
   items,
   children,
@@ -43,13 +47,26 @@ export default function VocabTableWithLookup({
   children: ReactNode;
 }) {
   const [selected, setSelected] = useState<VocabListRow | null>(null);
+  const [dueFilter, setDueFilter] = useState<DueFilter>("all");
+  // Frozen at mount rather than recomputed every render (Date.now() is an
+  // impure call React won't allow directly in the render body).
+  const [now] = useState(() => Date.now());
+
+  const dueCount = items.filter((item) => new Date(item.dueAt).getTime() <= now).length;
+
+  const filteredItems = items.filter((item) => {
+    if (dueFilter === "all") return true;
+    return new Date(item.dueAt).getTime() <= now;
+  });
 
   const groups = POS_GROUPS.map((g) => ({
     ...g,
-    items: items.filter((item) => {
-      const pos = item.lookup?.partOfSpeech;
-      return g.key === "other" ? !KNOWN_POS.has(pos ?? "") : pos === g.key;
-    }),
+    items: filteredItems
+      .filter((item) => {
+        const pos = item.lookup?.partOfSpeech;
+        return g.key === "other" ? !KNOWN_POS.has(pos ?? "") : pos === g.key;
+      })
+      .sort((a, b) => a.word.localeCompare(b.word)),
   })).filter((g) => g.items.length > 0);
 
   const panel = selected && (
@@ -66,6 +83,29 @@ export default function VocabTableWithLookup({
       <main className="flex-1 overflow-y-auto p-6">
         <div className="mx-auto w-full max-w-2xl">
           {children}
+          <div className="mb-4 flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant={dueFilter === "all" ? "solid" : "outline"}
+              color="neutral"
+              onClick={() => setDueFilter("all")}
+            >
+              All ({items.length})
+            </Button>
+            <Button
+              size="sm"
+              variant={dueFilter === "due" ? "solid" : "outline"}
+              color="neutral"
+              onClick={() => setDueFilter("due")}
+            >
+              Due now ({dueCount})
+            </Button>
+          </div>
+          {groups.length === 0 ? (
+            <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
+              Nothing due right now.
+            </Card>
+          ) : (
           <Accordion multiple defaultValue={groups.map((g) => g.key)}>
             {groups.map((group) => (
               <AccordionItem key={group.key} value={group.key}>
@@ -118,6 +158,7 @@ export default function VocabTableWithLookup({
               </AccordionItem>
             ))}
           </Accordion>
+          )}
         </div>
       </main>
 

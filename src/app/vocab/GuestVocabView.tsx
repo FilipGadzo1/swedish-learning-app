@@ -5,6 +5,7 @@ import Link from "next/link";
 import { buttonVariants, Card } from "@tessera/ui";
 import { listGuestVocab, type GuestVocabItem } from "@/lib/guest";
 import VocabTableWithLookup, { type VocabListRow } from "./VocabTableWithLookup";
+import QuickLookup from "./QuickLookup";
 
 export default function GuestVocabView() {
   const [items, setItems] = useState<GuestVocabItem[] | null>(null);
@@ -22,14 +23,17 @@ export default function GuestVocabView() {
   const dueCount = items.filter((i) => new Date(i.dueAt) <= now).length;
 
   const header = (
-    <div className="mb-4 flex items-center justify-between">
-      <h1 className="font-serif text-xl font-semibold">Vocabulary</h1>
-      {dueCount > 0 && (
-        <Link href="/vocab/drill" className={buttonVariants()}>
-          Drill {dueCount} due word{dueCount === 1 ? "" : "s"}
-        </Link>
-      )}
-    </div>
+    <>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="font-serif text-xl font-semibold">Vocabulary</h1>
+        {dueCount > 0 && (
+          <Link href="/vocab/drill" className={buttonVariants()}>
+            Drill {dueCount} due word{dueCount === 1 ? "" : "s"}
+          </Link>
+        )}
+      </div>
+      <QuickLookup guest />
+    </>
   );
 
   if (items.length === 0) {
@@ -52,6 +56,7 @@ export default function GuestVocabView() {
       meanings: item.englishMeanings,
       isDue,
       dueLabel: isDue ? "Due now" : due.toLocaleDateString(),
+      dueAt: item.dueAt,
       lookup: {
         lemma: item.word,
         partOfSpeech: item.partOfSpeech,

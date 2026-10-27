@@ -17,6 +17,7 @@ import { addGuestText } from "@/lib/guest";
 import ErrorMessage from "@/components/ErrorMessage";
 
 const LEVELS = ["A1", "A2", "B1", "B2"] as const;
+const TOPICS = ["Travel", "Food", "Daily life", "Weather", "Work", "Family", "Shopping", "Hobbies"];
 
 export default function GenerateTextForm({ guest = false }: { guest?: boolean }) {
   const router = useRouter();
@@ -83,6 +84,19 @@ export default function GenerateTextForm({ guest = false }: { guest?: boolean })
           <FieldLabel>Topic (optional)</FieldLabel>
           <Input value={topic} onChange={(e) => setTopic(e.target.value)} />
         </Field>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {TOPICS.map((t) => (
+          <Button
+            key={t}
+            type="button"
+            variant="outline"
+            size="xs"
+            onClick={() => setTopic(t)}
+          >
+            {t}
+          </Button>
+        ))}
       </div>
       {error && <ErrorMessage>{error}</ErrorMessage>}
       <Button type="submit" loading={submitting} className="self-start">

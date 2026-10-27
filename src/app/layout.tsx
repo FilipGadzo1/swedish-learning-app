@@ -37,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Suspense fallback={<div className="h-[49px] shrink-0 border-b border-hairline" />}>
           <NavBar />
         </Suspense>
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-14 sm:pb-0">{children}</div>
         <Analytics />
       </body>
     </html>

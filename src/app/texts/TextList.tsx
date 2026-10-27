@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@tessera/ui";
+import SparkleBorder from "@/components/SparkleBorder";
 
 export type TextListItem = {
   id: string;
@@ -99,7 +100,8 @@ export default function TextList({ texts }: { texts: TextListItem[] }) {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {visible.map((t) => (
             <Link key={t.id} href={`/texts/${t.id}`} className="group">
-              <Card className="rounded-none h-full gap-2 px-4 py-4 transition-colors group-hover:border-accent">
+              <Card className="relative rounded-none h-full gap-2 px-4 py-4 transition-colors group-hover:border-accent">
+                <SparkleBorder count={10} />
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-medium group-hover:text-accent">{t.title}</span>
                   {t.level && (

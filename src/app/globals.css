@@ -75,3 +75,77 @@ body {
     transition: none;
   }
 }
+
+/* ── Sparkle mode ── */
+.sparkle-border-layer {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.sparkle-ambient-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sparkle-dot {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 70%);
+  animation-name: sparkle-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes sparkle-twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.6);
+  }
+}
+
+.sparkle-trail-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.sparkle-particle {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, #ffffff, #ffffff 55%, transparent 72%);
+  box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.8);
+  animation: sparkle-pop 0.7s ease-out forwards;
+}
+
+@keyframes sparkle-pop {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.2) translateY(-14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sparkle-dot,
+  .sparkle-particle {
+    animation: none;
+  }
+}

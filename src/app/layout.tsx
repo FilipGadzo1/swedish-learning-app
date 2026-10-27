@@ -3,8 +3,9 @@ import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/next";
 import { Lora, Archivo } from "next/font/google";
 import "./globals.css";
-import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import { THEME_INIT_SCRIPT, PRIMARY_INIT_SCRIPT } from "@/lib/theme";
 import NavBar from "@/components/NavBar";
+import SparkleEffects from "@/components/SparkleEffects";
 
 const lora = Lora({
   variable: "--font-lora",
@@ -32,12 +33,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: PRIMARY_INIT_SCRIPT }} />
       </head>
       <body className="h-dvh overflow-hidden flex flex-col bg-background text-foreground font-sans">
         <Suspense fallback={<div className="h-[49px] shrink-0 border-b border-hairline" />}>
           <NavBar />
         </Suspense>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-14 sm:pb-0">{children}</div>
+        <SparkleEffects />
         <Analytics />
       </body>
     </html>

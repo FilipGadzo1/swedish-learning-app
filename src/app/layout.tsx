@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/next";
 import { Lora, Archivo } from "next/font/google";
 import "./globals.css";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import NavBar from "@/components/NavBar";
 
 const lora = Lora({
@@ -24,13 +25,19 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      data-primary="carnelian"
+      data-surface="sandstone"
       className={`${lora.variable} ${archivo.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
-        <Suspense fallback={<div className="h-[49px] border-b border-hairline" />}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
+      <body className="h-dvh overflow-hidden flex flex-col bg-background text-foreground font-sans">
+        <Suspense fallback={<div className="h-[49px] shrink-0 border-b border-hairline" />}>
           <NavBar />
         </Suspense>
-        <div className="flex flex-1 flex-col">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{children}</div>
         <Analytics />
       </body>
     </html>

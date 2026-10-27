@@ -36,8 +36,8 @@ export default async function GrammarLayout({ children }: { children: React.Reac
   );
 
   return (
-    <div className="flex flex-1 flex-col md:flex-row">
-      <aside className="w-full shrink-0 border-b border-hairline bg-surface p-4 md:w-64 md:border-b-0 md:border-r">
+    <div className="flex flex-1 flex-col md:min-h-0 md:flex-row">
+      <aside className="w-full shrink-0 border-b border-hairline bg-surface p-4 md:w-64 md:overflow-y-auto md:border-b-0 md:border-r">
         <p className="mb-2 text-xs uppercase tracking-wide text-muted">Grammar</p>
         <nav className="flex flex-col gap-1">
           {GRAMMAR_LESSONS.map((lesson) => (
@@ -50,7 +50,7 @@ export default async function GrammarLayout({ children }: { children: React.Reac
           ))}
         </nav>
       </aside>
-      <div className="flex-1">{children}</div>
+      <div className="flex flex-1 flex-col md:overflow-y-auto">{children}</div>
     </div>
   );
 }

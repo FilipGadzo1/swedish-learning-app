@@ -2,6 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Button,
+  Card,
+  Field,
+  FieldLabel,
+  FileUpload,
+  FileUploadDropzone,
+  FileUploadList,
+  FileUploadRejections,
+  Input,
+} from "@tessera/ui";
 import { addGuestText } from "@/lib/guest";
 import ErrorMessage from "@/components/ErrorMessage";
 
@@ -53,27 +64,30 @@ export default function ImportPdfForm({ guest = false }: { guest?: boolean }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-3 flex flex-col gap-2 rounded-lg border border-hairline bg-surface p-4">
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title"
-        className="rounded-lg border border-hairline bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
-      />
-      <input
-        type="file"
-        accept="application/pdf"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        className="text-sm"
-      />
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-      <button
-        type="submit"
-        disabled={submitting || !file}
-        className="self-start rounded-lg bg-accent px-4 py-2 text-sm font-medium text-foreground hover:opacity-90 disabled:opacity-50"
-      >
-        {submitting ? "Importing..." : "Import PDF"}
-      </button>
-    </form>
+    <Card className="mt-3 p-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <Field>
+          <FieldLabel>Title</FieldLabel>
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        </Field>
+        <Field>
+          <FieldLabel>PDF file</FieldLabel>
+          <FileUpload
+            accept="application/pdf"
+            maxFiles={1}
+            value={file ? [file] : []}
+            onValueChange={(files) => setFile(files[0] ?? null)}
+          >
+            <FileUploadDropzone />
+            <FileUploadRejections />
+            <FileUploadList />
+          </FileUpload>
+        </Field>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        <Button type="submit" loading={submitting} disabled={!file} className="self-start">
+          Import PDF
+        </Button>
+      </form>
+    </Card>
   );
 }

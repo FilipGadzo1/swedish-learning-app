@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { Button } from "@tessera/ui";
 import { exitGuestMode } from "@/lib/guest";
 
 export default function SignOutButton({ label = "Sign out" }: { label?: string }) {
@@ -16,8 +17,8 @@ export default function SignOutButton({ label = "Sign out" }: { label?: string }
   }
 
   return (
-    <button onClick={signOut} className="text-muted hover:text-foreground">
+    <Button variant="ghost" size="sm" onClick={signOut}>
       {label}
-    </button>
+    </Button>
   );
 }

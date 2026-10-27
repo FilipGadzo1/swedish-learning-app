@@ -10,8 +10,15 @@ Given a single Swedish word (possibly inflected), respond with ONLY a JSON objec
   "partOfSpeech": "noun" | "verb" | "adjective" | "adverb" | "other",
   "englishMeanings": string[],  // 1-4 concise English translations
   "notes": string | null,       // short usage note if genuinely useful, else null
-  "grammar": { ... }            // shape depends on partOfSpeech, see below
+  "grammar": { ... },           // shape depends on partOfSpeech, see below
+  "recognized": boolean         // false if this is NOT a real, standard Swedish word
 }
+
+If the input is not a real Swedish word — a typo, a name, a word from another
+language, or otherwise unrecognizable — set "recognized" to false, "partOfSpeech"
+to "other", "grammar" to {}, leave "englishMeanings" as your best guess or an empty
+array, and explain in "notes" what the word might be instead (e.g. a likely
+misspelling). Otherwise set "recognized" to true.
 
 If partOfSpeech is "noun", grammar must be:
 { "gender": "en" | "ett", "singularIndefinite": string, "singularDefinite": string,
@@ -50,7 +57,9 @@ export async function POST(req: NextRequest) {
     .eq("word", key)
     .maybeSingle();
 
-  if (cached) {
+  // Cache rows written before "recognized" existed are stale — regenerate them
+  // instead of serving data the UI can no longer make a correct decision from.
+  if (cached && typeof (cached.data as { recognized?: boolean }).recognized === "boolean") {
     return NextResponse.json(cached.data);
   }
 
@@ -76,7 +85,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  await supabase.from("dictionary_cache").insert({ word: key, data: parsed });
+  await supabase
+    .from("dictionary_cache")
+    .upsert({ word: key, data: parsed }, { onConflict: "word" });
 
   return NextResponse.json(parsed);
 }

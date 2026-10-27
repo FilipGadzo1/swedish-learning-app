@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { buttonVariants, Card } from "@tessera/ui";
 import { createClient } from "@/lib/supabase/server";
 import { GUEST_COOKIE } from "@/lib/guest";
+import type { LookupData } from "@/app/texts/[id]/LookupPanelContent";
 import GuestVocabView from "./GuestVocabView";
+import VocabTableWithLookup from "./VocabTableWithLookup";
 
 // Per-user data (auth + DB reads) — must run per-request, not be prerendered.
 export const instant = false;
@@ -11,7 +14,7 @@ type VocabRow = {
   id: string;
   word: string;
   due_at: string;
-  dictionary_cache: { data: { englishMeanings: string[]; partOfSpeech: string } } | null;
+  dictionary_cache: { data: LookupData } | null;
 };
 
 export default async function VocabPage() {
@@ -34,51 +37,43 @@ export default async function VocabPage() {
   const now = new Date();
   const dueCount = items.filter((i) => new Date(i.due_at) <= now).length;
 
-  return (
-    <main className="mx-auto w-full max-w-2xl flex-1 p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="font-serif text-xl font-semibold">Vocabulary</h1>
-        {dueCount > 0 && (
-          <Link
-            href="/vocab/drill"
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-foreground hover:opacity-90"
-          >
-            Drill {dueCount} due word{dueCount === 1 ? "" : "s"}
-          </Link>
-        )}
-      </div>
-
-      {items.length === 0 ? (
-        <p className="rounded-lg border border-hairline bg-surface px-4 py-6 text-center text-sm text-muted">
-          No vocabulary yet — look up words in a text and add them here.
-        </p>
-      ) : (
-        <table className="w-full overflow-hidden rounded-lg border border-hairline bg-surface text-sm">
-          <thead>
-            <tr className="border-b border-hairline text-left text-xs text-muted">
-              <th className="px-4 py-2 font-medium">Word</th>
-              <th className="px-4 py-2 font-medium">Meaning</th>
-              <th className="px-4 py-2 font-medium">Next review</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => {
-              const meanings = item.dictionary_cache?.data?.englishMeanings ?? [];
-              const due = new Date(item.due_at);
-              const isDue = due <= now;
-              return (
-                <tr key={item.id} className="border-b border-hairline last:border-b-0">
-                  <td className="px-4 py-2.5 font-serif">{item.word}</td>
-                  <td className="px-4 py-2.5 text-muted">{meanings.join(", ")}</td>
-                  <td className={`px-4 py-2.5 ${isDue ? "font-medium text-accent" : "text-muted"}`}>
-                    {isDue ? "Due now" : due.toLocaleDateString()}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+  const header = (
+    <div className="mb-4 flex items-center justify-between">
+      <h1 className="font-serif text-xl font-semibold">Vocabulary</h1>
+      {dueCount > 0 && (
+        <Link href="/vocab/drill" className={buttonVariants()}>
+          Drill {dueCount} due word{dueCount === 1 ? "" : "s"}
+        </Link>
       )}
-    </main>
+    </div>
   );
+
+  if (items.length === 0) {
+    return (
+      <main className="mx-auto w-full max-w-2xl flex-1 p-6">
+        {header}
+        <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
+          No vocabulary yet — look up words in a text and add them here.
+        </Card>
+      </main>
+    );
+  }
+
+  // Due labels are computed here so the client table hydrates with
+  // server-formatted dates instead of re-running toLocaleDateString.
+  const rows = items.map((item) => {
+    const due = new Date(item.due_at);
+    const isDue = due <= now;
+    const lookup = item.dictionary_cache?.data ?? null;
+    return {
+      id: item.id,
+      word: item.word,
+      meanings: lookup?.englishMeanings ?? [],
+      isDue,
+      dueLabel: isDue ? "Due now" : due.toLocaleDateString(),
+      lookup,
+    };
+  });
+
+  return <VocabTableWithLookup items={rows}>{header}</VocabTableWithLookup>;
 }

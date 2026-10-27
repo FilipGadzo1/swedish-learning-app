@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@tessera/ui";
 import ErrorMessage from "@/components/ErrorMessage";
 
 export default function Error({
@@ -15,12 +16,7 @@ export default function Error({
       <ErrorMessage className="text-left">
         {error.message || "An unexpected error occurred."}
       </ErrorMessage>
-      <button
-        onClick={() => retry()}
-        className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-foreground hover:opacity-90"
-      >
-        Try again
-      </button>
+      <Button onClick={() => retry()}>Try again</Button>
     </main>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Button, Card, Progress, ProgressValue } from "@tessera/ui";
 import { listGuestVocab, updateGuestVocabSrs, type GuestVocabItem } from "@/lib/guest";
 import { nextSrsState, type Rating } from "@/lib/srs";
 
@@ -54,13 +55,15 @@ export default function GuestDrillView() {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-6 p-6">
-      <p className="text-xs text-muted">
-        {index + 1} of {cards.length}
-      </p>
+      <Progress value={index + 1} max={cards.length} size="sm" aria-label="Drill progress">
+        <ProgressValue className="mx-auto text-xs text-muted">
+          {() => `${index + 1} of ${cards.length}`}
+        </ProgressValue>
+      </Progress>
 
-      <div
+      <Card
         onClick={() => setFlipped(true)}
-        className="flex min-h-[180px] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border border-hairline bg-surface p-8 text-center"
+        className="min-h-[180px] w-full cursor-pointer items-center justify-center gap-3 p-8 text-center"
       >
         <p className="font-serif text-2xl font-semibold">{card.word}</p>
         {!flipped ? (
@@ -73,34 +76,22 @@ export default function GuestDrillView() {
             )}
           </div>
         )}
-      </div>
+      </Card>
 
       {flipped && (
         <div className="grid w-full grid-cols-4 gap-2">
-          <button
-            onClick={() => handleRate("again")}
-            className="rounded-lg border border-hairline py-2 text-xs font-medium hover:border-accent"
-          >
+          <Button variant="outline" color="neutral" size="sm" onClick={() => handleRate("again")}>
             Again
-          </button>
-          <button
-            onClick={() => handleRate("hard")}
-            className="rounded-lg border border-hairline py-2 text-xs font-medium hover:border-accent"
-          >
+          </Button>
+          <Button variant="outline" color="neutral" size="sm" onClick={() => handleRate("hard")}>
             Hard
-          </button>
-          <button
-            onClick={() => handleRate("good")}
-            className="rounded-lg border border-hairline py-2 text-xs font-medium hover:border-accent"
-          >
+          </Button>
+          <Button variant="outline" color="neutral" size="sm" onClick={() => handleRate("good")}>
             Good
-          </button>
-          <button
-            onClick={() => handleRate("easy")}
-            className="rounded-lg bg-accent py-2 text-xs font-medium text-foreground hover:opacity-90"
-          >
+          </Button>
+          <Button size="sm" onClick={() => handleRate("easy")}>
             Easy
-          </button>
+          </Button>
         </div>
       )}
     </main>

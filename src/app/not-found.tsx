@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buttonVariants } from "@tessera/ui";
 
 export default function NotFound() {
   return (
@@ -8,10 +9,7 @@ export default function NotFound() {
       <p className="font-serif text-muted">
         Den här sidan finns inte — this page doesn&apos;t exist (yet).
       </p>
-      <Link
-        href="/texts"
-        className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-foreground hover:opacity-90"
-      >
+      <Link href="/texts" className={buttonVariants()}>
         Back to texts
       </Link>
     </main>

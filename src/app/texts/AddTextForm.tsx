@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button, Card, Field, FieldLabel, Input, Textarea } from "@tessera/ui";
 import { createClient } from "@/lib/supabase/client";
 import { addGuestText } from "@/lib/guest";
 import ErrorMessage from "@/components/ErrorMessage";
@@ -61,28 +62,26 @@ export default function AddTextForm({ guest = false }: { guest?: boolean }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2 rounded-lg border border-hairline bg-surface p-4">
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title"
-        className="rounded-lg border border-hairline bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
-      />
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="Paste Swedish text here..."
-        rows={5}
-        className="rounded-lg border border-hairline bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
-      />
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-      <button
-        type="submit"
-        disabled={submitting}
-        className="self-start rounded-lg bg-accent px-4 py-2 text-sm font-medium text-foreground hover:opacity-90 disabled:opacity-50"
-      >
-        {submitting ? "Saving..." : "Add text"}
-      </button>
-    </form>
+    <Card className="p-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <Field>
+          <FieldLabel>Title</FieldLabel>
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        </Field>
+        <Field>
+          <FieldLabel>Text</FieldLabel>
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Paste Swedish text here..."
+            rows={5}
+          />
+        </Field>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        <Button type="submit" loading={submitting} className="self-start">
+          Add text
+        </Button>
+      </form>
+    </Card>
   );
 }

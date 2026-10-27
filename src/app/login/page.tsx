@@ -1,12 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { Button } from "@tessera/ui";
 import { createClient } from "@/lib/supabase/client";
 import { enterGuestMode } from "@/lib/guest";
 
 export default function LoginPage() {
-  const router = useRouter();
-
   async function signInWithGoogle() {
     const supabase = createClient();
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -26,28 +24,23 @@ export default function LoginPage() {
 
   function continueAsGuest() {
     enterGuestMode();
-    router.push("/texts");
-    router.refresh();
+    // One full load picks up the new cookie server-side; push() + refresh() costs two round trips.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.href = "/texts";
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
+    <main className="flex flex-1 flex-col items-center justify-center gap-6 p-8">
       <h1 className="font-serif text-2xl font-semibold">Svenska</h1>
       <p className="max-w-sm text-center text-sm text-muted">
         Sign in to save your progress across devices.
       </p>
-      <button
-        onClick={signInWithGoogle}
-        className="rounded-lg border border-hairline bg-surface px-4 py-2 font-medium hover:border-accent"
-      >
+      <Button variant="outline" onClick={signInWithGoogle}>
         Sign in with Google
-      </button>
-      <button
-        onClick={continueAsGuest}
-        className="text-sm text-muted underline hover:text-foreground"
-      >
+      </Button>
+      <Button variant="link" onClick={continueAsGuest}>
         Continue as guest
-      </button>
+      </Button>
       <p className="max-w-sm text-center text-xs text-muted">
         Guest data stays only in this browser and is lost if you clear site
         data — it never syncs to an account.

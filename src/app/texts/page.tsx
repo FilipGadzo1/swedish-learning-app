@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { GUEST_COOKIE } from "@/lib/guest";
@@ -6,6 +5,7 @@ import AddTextForm from "./AddTextForm";
 import ImportPdfForm from "./ImportPdfForm";
 import GenerateTextForm from "./GenerateTextForm";
 import GuestTextsView from "./GuestTextsView";
+import TextList from "./TextList";
 
 // Per-user data (auth + DB reads) — must run per-request, not be prerendered.
 export const instant = false;
@@ -33,25 +33,7 @@ export default async function TextsPage() {
       <AddTextForm />
       <ImportPdfForm />
       <GenerateTextForm />
-      <ul className="mt-6 divide-y divide-hairline rounded-lg border border-hairline bg-surface">
-        {texts && texts.length > 0 ? (
-          texts.map((t) => (
-            <li key={t.id} className="flex items-center justify-between px-4 py-3">
-              <Link href={`/texts/${t.id}`} className="font-medium hover:text-accent">
-                {t.title}
-              </Link>
-              <span className="text-xs text-muted">
-                {t.source}
-                {t.level ? ` · ${t.level}` : ""}
-              </span>
-            </li>
-          ))
-        ) : (
-          <li className="px-4 py-6 text-center text-sm text-muted">
-            No texts yet — paste one above to get started.
-          </li>
-        )}
-      </ul>
+      <TextList texts={texts ?? []} />
     </main>
   );
 }

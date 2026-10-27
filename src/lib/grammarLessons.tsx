@@ -249,6 +249,315 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
       </>
     ),
   },
+  {
+    slug: "word-types",
+    title: "Types of words: an overview",
+    summary: "The main word classes in Swedish, and how they relate to each other.",
+    body: (
+      <>
+        <p>
+          Swedish sorts words into the same basic classes English does, which makes
+          this mostly a matter of relabeling rather than learning new concepts from
+          scratch. Knowing the class of a word tells you which rules apply to it —
+          whether it inflects for gender, tense, or not at all.
+        </p>
+        <ExampleTable
+          rows={[
+            ["substantiv", "noun — bil, hus, kärlek (car, house, love)"],
+            ["verb", "verb — läsa, vara, springa (to read, to be, to run)"],
+            ["adjektiv", "adjective — stor, röd, snäll (big, red, kind)"],
+            ["adverb", "adverb — snabbt, ofta, inte (quickly, often, not)"],
+            ["pronomen", "pronoun — jag, den, min (I, it, my)"],
+            ["preposition", "preposition — i, på, under (in, on, under)"],
+            ["konjunktion", "conjunction — och, men, att (and, but, that)"],
+            ["räkneord", "numeral — en, två, tredje (one, two, third)"],
+          ]}
+        />
+        <p>
+          The classes that change form — nouns, verbs, and adjectives — each have
+          their own lesson here (gender and plurals, tense and supine, and
+          agreement). The ones that mostly don&rsquo;t change — pronouns aside,
+          which still vary by case — are covered in the pronouns, adverbs, and
+          connecting-words lessons. One structural note worth internalizing early:
+          Swedish has no separate word for &ldquo;a&rdquo;/&ldquo;an&rdquo; — that information is
+          baked into whether a noun is an <em>en</em>-word or an <em>ett</em>-word,
+          which is why gender shows up so early and so often in this app.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "pronouns",
+    title: "Pronouns: jag, mig, min",
+    summary: "Personal, possessive, and reflexive pronouns — and when each form is used.",
+    body: (
+      <>
+        <p>
+          Swedish personal pronouns change form depending on whether they&rsquo;re the
+          subject or the object of a verb, similar to English &ldquo;I&rdquo; vs. &ldquo;me.&rdquo;
+        </p>
+        <ExampleTable
+          rows={[
+            ["jag / mig", "I / me"],
+            ["du / dig", "you / you (singular)"],
+            ["han / honom", "he / him"],
+            ["hon / henne", "she / her"],
+            ["den / det — den / det", "it (en-word) / it (ett-word) — same in both roles"],
+            ["vi / oss", "we / us"],
+            ["ni / er", "you / you (plural)"],
+            ["de / dem", "they / them"],
+          ]}
+        />
+        <p>
+          <strong>Possessive pronouns</strong> agree with the noun they modify the
+          same way adjectives do (en-word, ett-word, or plural):{" "}
+          <em>min bil, mitt hus, mina böcker</em> (my car, my house, my books). This
+          three-way split applies to <em>min/mitt/mina</em> (my), <em>din/ditt/dina</em>{" "}
+          (your), and <em>vår/vårt/våra</em> (our). The third-person possessives —{" "}
+          <em>hans</em> (his), <em>hennes</em> (her/hers), <em>dess</em> (its),{" "}
+          <em>deras</em> (their/theirs) — don&rsquo;t change at all.
+        </p>
+        <p>
+          <strong>Reflexive pronouns</strong> are used when the object is the same
+          person as the subject. For <em>jag, du, vi, ni</em> this just reuses the
+          object pronoun: <em>Jag tvättar mig</em> (I wash myself). But third person
+          uses a dedicated word, <strong>sig</strong>, regardless of gender or
+          number: <em>Hon tvättar sig</em> (she washes herself), <em>De tvättar sig</em>{" "}
+          (they wash themselves) — never <em>henne</em> or <em>dem</em> here, since
+          the subject and object are the same person.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "adverbs",
+    title: "Adverbs and where they go",
+    summary: "Adverbs modify verbs and sentences — and often look like an adjective's neuter form.",
+    body: (
+      <>
+        <p>
+          An adverb describes how, when, or how much something happens, rather than
+          describing a noun. Many Swedish adverbs are formed by taking an
+          adjective&rsquo;s <em>ett</em>-form (the one that adds <strong>-t</strong>) and
+          using it to modify a verb instead of a noun — the same word, a different
+          job.
+        </p>
+        <ExampleTable
+          rows={[
+            ["Bilen är snabb. → Han kör snabbt.", "The car is fast. → He drives fast."],
+            ["Huset är vackert. → Hon sjunger vackert.", "The house is beautiful. → She sings beautifully."],
+          ]}
+        />
+        <p>
+          Other adverbs are their own dedicated words and don&rsquo;t come from
+          adjectives at all — these are extremely common and worth memorizing early:{" "}
+          <em>inte</em> (not), <em>alltid</em> (always), <em>ofta</em> (often),{" "}
+          <em>aldrig</em> (never), <em>bara</em> (just/only), <em>redan</em> (already),{" "}
+          <em>mycket</em> (a lot, very), <em>väldigt</em> (very).
+        </p>
+        <p>
+          Placement matters, especially for <strong>inte</strong>. In a main clause it
+          goes directly after the finite verb: <em>Jag förstår inte</em> (I don&rsquo;t
+          understand), <em>Hon kommer inte imorgon</em> (She&rsquo;s not coming
+          tomorrow). In a subordinate clause, it moves to <em>before</em> the verb
+          instead: <em>...eftersom jag inte förstår</em> (...because I don&rsquo;t
+          understand) — see the connecting-words lesson for why clause type changes
+          the word order.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "connecting-words",
+    title: "Connecting words: och, men, eftersom",
+    summary: "Coordinating vs. subordinating conjunctions — and the word-order rule that comes with the second kind.",
+    body: (
+      <>
+        <p>
+          Conjunctions join clauses together, but Swedish cares about{" "}
+          <em>which kind</em> of conjunction you use, because it changes the word
+          order of the clause that follows.
+        </p>
+        <p>
+          <strong>Coordinating conjunctions</strong> join two clauses as equals and
+          don&rsquo;t disturb normal V2 word order in either one:
+        </p>
+        <ExampleTable
+          rows={[
+            ["och", "and"],
+            ["men", "but"],
+            ["eller", "or"],
+            ["för", "because/for (coordinating — rare, slightly formal)"],
+            ["så", "so"],
+            ["utan", "but rather (after a negative)"],
+          ]}
+        />
+        <p>
+          <strong>Subordinating conjunctions</strong> introduce a clause that depends
+          on the main one, and inside that clause the subject must come immediately
+          before the verb — no inversion, even if something else leads the clause.
+          This is also where sentence adverbials like <em>inte</em> move before the
+          verb instead of after it (see the adverbs lesson):
+        </p>
+        <ExampleTable
+          rows={[
+            ["att", "that"],
+            ["om", "if"],
+            ["eftersom / därför att", "because"],
+            ["när", "when"],
+            ["medan", "while"],
+            ["innan", "before"],
+            ["fastän / trots att", "even though/despite"],
+          ]}
+        />
+        <ExampleTable
+          rows={[
+            ["Jag stannar hemma eftersom det regnar.", "I'm staying home because it's raining."],
+            ["Hon sa att hon inte kommer.", "She said that she isn't coming."],
+          ]}
+        />
+        <p>
+          Notice the main clause (&ldquo;I&rsquo;m staying home&rdquo;, &ldquo;She said&rdquo;) still
+          follows the normal V2 rule; it&rsquo;s only inside the subordinate clause
+          introduced by the connecting word that the subject-before-verb order is
+          fixed and inversion is switched off.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "slang",
+    title: "Everyday slang and shortcuts",
+    summary: "The casual Swedish you'll hear in speech and texting that textbooks skip.",
+    body: (
+      <>
+        <p>
+          Spoken and texted Swedish trims and bends standard grammar constantly.
+          None of this is &ldquo;wrong&rdquo; — it&rsquo;s just not what you&rsquo;d write in a formal
+          text, which is why the reader&rsquo;s generated texts mostly avoid it, but
+          you&rsquo;ll hit it immediately in real conversation.
+        </p>
+        <ExampleTable
+          rows={[
+            ["typ", "like / kind of (filler, exactly like English \"typ är det kul\" = \"it's like, fun\")"],
+            ["kul / grymt / najs", "fun / awesome / nice (grymt and najs are both casual intensifiers)"],
+            ["schysst", "decent, nice, fair (\"that's a decent price\", \"he's a nice guy\")"],
+            ["fett", "literally \"fat\" — slang for \"really/very\": fett bra = really good"],
+            ["kolla", "to look/check: kolla här = look here, check this out"],
+            ["chilla", "to chill, relax — a direct English loanword"],
+            ["funkar", "works/is fine: funkar för mig = works for me"],
+            ["fan / jävlar", "mild-to-strong swear, roughly \"damn/hell\" — common but not polite company"],
+          ]}
+        />
+        <p>
+          Pronunciation-driven spelling shortcuts are everywhere in texting:{" "}
+          <em>dom</em> replaces both <em>de</em> and <em>dem</em> in speech and
+          casual writing (they/them collapse into one sound), <em>nåt</em> or{" "}
+          <em>nått</em> stands in for <em>något</em> (something), and <em>sa</em> is
+          the everyday past tense of <em>säga</em> (to say) that you&rsquo;ll hear far
+          more than the fuller written forms.
+        </p>
+        <p>
+          A good rule of thumb: if a generated text or dictionary lookup gives you
+          the &ldquo;proper&rdquo; form, that&rsquo;s what to learn first — slang is easier to
+          pick up by ear once the underlying word is already familiar.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "idioms-and-phrases",
+    title: "Idioms and popular phrases",
+    summary: "Fixed expressions that don't translate word-for-word — including Swedish's own \"cat got your tongue.\"",
+    body: (
+      <>
+        <p>
+          Every language has sayings that make no sense translated literally.
+          Swedish has an English equivalent for almost every situation — just with
+          its own imagery.
+        </p>
+        <ExampleTable
+          rows={[
+            ["Har du tappat tungan?", "\"Cat got your tongue?\" (literally: \"Did you lose your tongue?\")"],
+            ["Ingen ko på isen.", "No rush, no worries. (literally: \"No cow on the ice.\")"],
+            ["Det ligger en hund begraven här.", "Something fishy is going on. (literally: \"There's a dog buried here.\")"],
+            ["Köpa grisen i säcken.", "To buy a pig in a poke — buy something sight unseen."],
+            ["Få skägget i brevlådan.", "To get caught out / end up in an awkward spot. (literally: \"to get your beard in the mailbox\")"],
+            ["Glad som en lärka.", "Happy as a lark."],
+            ["Smaken är som baken — delad.", "Tastes differ. (literally: \"Taste is like the backside — divided,\" a pun since \"delad bak\" also means a cleft behind)"],
+            ["Det var som attan!", "Well, I'll be darned! (mild exclamation of surprise)"],
+          ]}
+        />
+        <p>
+          These are worth recognizing more than producing at first — when a native
+          speaker drops one into conversation, the literal words will mislead you if
+          you try to translate them directly. Look them up the same way you would
+          any other vocabulary: the dictionary lookup in the reader works on single
+          words, so for idioms it&rsquo;s more useful to recognize the whole phrase as a
+          unit than to look up &ldquo;ko&rdquo; (cow) and &ldquo;is&rdquo; (ice) separately and wonder
+          why they don&rsquo;t add up to &ldquo;no rush.&rdquo;
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "phrasal-verbs",
+    title: "Phrasal verbs (partikelverb)",
+    summary: "Verb + particle combinations that create a brand new meaning — ta bort, ge upp, slå på.",
+    body: (
+      <>
+        <p>
+          Just like English &ldquo;give up,&rdquo; &ldquo;turn on,&rdquo; and &ldquo;look after&rdquo; mean
+          something very different from &ldquo;give,&rdquo; &ldquo;turn,&rdquo; and &ldquo;look&rdquo; alone,
+          Swedish has its own set of verb-plus-particle combinations called{" "}
+          <strong>partikelverb</strong>. The particle — usually a short word that
+          also works as a preposition or adverb on its own — attaches to a verb
+          and shifts its meaning, sometimes completely.
+        </p>
+        <ExampleTable
+          rows={[
+            ["ta bort", "to remove (ta = to take, bort = away)"],
+            ["ge upp", "to give up"],
+            ["slå på / stänga av", "to turn on / to turn off"],
+            ["komma på", "to come up with / to realize"],
+            ["komma ihåg", "to remember"],
+            ["sätta igång", "to get going, to start"],
+            ["lägga till", "to add"],
+            ["ta på / ta av", "to put on / to take off (clothes)"],
+          ]}
+        />
+        <p>
+          A useful test for spotting a true partikelverb: the particle carries
+          its own stress, almost as heavy as the verb itself —{" "}
+          <em>ta&nbsp;BORT</em>, not <em>TA&nbsp;bort</em>. Compare that with a verb
+          that simply happens to be followed by a preposition, like{" "}
+          <em>tänka på</em> (to think about) or <em>vänta på</em> (to wait for):
+          there the stress stays on the verb, and the meaning is a fairly
+          predictable combination of the two words rather than something new.
+        </p>
+        <p>
+          Word order gets specific when the object is a pronoun rather than a
+          full noun: a pronoun object goes <em>between</em> the verb and the
+          particle, while a noun object can go either between them or after the
+          particle:
+        </p>
+        <ExampleTable
+          rows={[
+            ["Ta bort filen. / Ta filen bort.", "Remove the file. (noun object — either order)"],
+            ["Ta bort den.", "Remove it. (pronoun object — must go between verb and particle)"],
+            ["Jag kom på det igår.", "I thought of it yesterday. (pronoun \"det\" before the particle \"på\")"],
+          ]}
+        />
+        <p>
+          This is also why the dictionary lookup in the reader shows a verb&rsquo;s
+          bare infinitive, present, past, supine, and imperative forms —
+          partikelverb conjugate exactly like their base verb does (<em>ta</em>{" "}
+          → <em>tar</em> → <em>tog</em> → <em>tagit</em>), with the particle simply
+          riding along unchanged.
+        </p>
+      </>
+    ),
+  },
 ];
 
 export function getLesson(slug: string) {

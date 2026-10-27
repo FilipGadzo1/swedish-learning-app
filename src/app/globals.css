@@ -1,22 +1,17 @@
 @import "tailwindcss";
+@import "@tessera/ui/styles.css";
 
-:root {
-  color-scheme: light;
-  --background: #f3efe4;
-  --surface: #ffffff;
-  --foreground: #2b2a26;
-  --muted: #6e6a5e;
-  --accent: #c79a3c;
-  --hairline: #2b2a261f;
-}
-
+/* Tessera (data-primary="carnelian" data-surface="sandstone", set on <html>
+   in layout.tsx) is the single source of truth for theme colors. These
+   mappings keep the app's existing bg-surface/border-hairline/etc. utility
+   names working against Tessera's tokens instead of duplicating them. */
 @theme inline {
   --color-background: var(--background);
-  --color-surface: var(--surface);
+  --color-surface: var(--card);
   --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-accent: var(--accent);
-  --color-hairline: var(--hairline);
+  --color-muted: var(--muted-foreground);
+  --color-accent: var(--primary);
+  --color-hairline: var(--border);
   --font-sans: var(--font-archivo);
   --font-serif: var(--font-lora);
 }
@@ -24,4 +19,19 @@
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* ── View Transitions: circle-reveal from click position ── */
+@keyframes theme-reveal {
+  from { clip-path: circle(0px at var(--vt-x, 50%) var(--vt-y, 50%)); }
+  to   { clip-path: circle(200vmax at var(--vt-x, 50%) var(--vt-y, 50%)); }
+}
+
+::view-transition-new(root) {
+  animation: theme-reveal 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+::view-transition-old(root) {
+  /* Keep old state visible and static while new state grows over it */
+  animation: none;
 }

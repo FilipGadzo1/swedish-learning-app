@@ -27,7 +27,7 @@ export default async function TextPage({
 
   const { data: text } = await supabase
     .from("texts")
-    .select("id, title, content")
+    .select("id, title, content, source")
     .eq("id", id)
     .maybeSingle();
 

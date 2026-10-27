@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@tessera/ui";
 import { createClient } from "@/lib/supabase/client";
 import { tokenize } from "@/lib/tokenize";
 import LookupPanelContent, { type LookupData } from "./LookupPanelContent";
@@ -8,7 +9,7 @@ import LookupPanelContent, { type LookupData } from "./LookupPanelContent";
 export default function ReaderView({
   text,
 }: {
-  text: { id: string; title: string; content: string };
+  text: { id: string; title: string; content: string; source: string };
 }) {
   const tokens = tokenize(text.content);
 
@@ -23,6 +24,27 @@ export default function ReaderView({
   const [addingVocab, setAddingVocab] = useState(false);
   const [addedVocab, setAddedVocab] = useState(false);
   const [notedWords, setNotedWords] = useState<Set<string>>(new Set());
+  const [copied, setCopied] = useState(false);
+  const lookupCacheRef = useRef<Map<string, LookupData>>(new Map());
+  const activeWordRef = useRef<string | null>(null);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(text.content);
+      setCopied(true);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError("Couldn't copy text — your browser may be blocking clipboard access.");
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -50,57 +72,72 @@ export default function ReaderView({
   }, [text.id]);
 
   async function handleWordClick(word: string) {
+    activeWordRef.current = word;
     setSelectedWord(word);
-    setLookupData(null);
     setError(null);
     setNote("");
     setNoteId(null);
     setNoteSaved(false);
     setAddedVocab(false);
-    setLoading(true);
+
+    const cached = lookupCacheRef.current.get(word.toLowerCase());
+    setLookupData(cached ?? null);
+    setLoading(!cached);
 
     try {
-      const res = await fetch("/api/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ word }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? `Lookup failed (${res.status})`);
+      let data: LookupData;
+      if (cached) {
+        data = cached;
+      } else {
+        const res = await fetch("/api/lookup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ word }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error ?? `Lookup failed (${res.status})`);
+        }
+        data = await res.json();
+        lookupCacheRef.current.set(word.toLowerCase(), data);
+        lookupCacheRef.current.set(data.lemma.toLowerCase(), data);
+        if (activeWordRef.current !== word) return;
+        setLookupData(data);
       }
-      const data: LookupData = await res.json();
-      setLookupData(data);
 
       const supabase = createClient();
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        const { data: existing } = await supabase
-          .from("vocab_items")
-          .select("word")
-          .eq("profile_id", userData.user.id)
-          .eq("word", data.lemma.toLowerCase())
-          .maybeSingle();
+        const [{ data: existing }, { data: existingHighlight }] = await Promise.all([
+          supabase
+            .from("vocab_items")
+            .select("word")
+            .eq("profile_id", userData.user.id)
+            .eq("word", data.lemma.toLowerCase())
+            .maybeSingle(),
+          supabase
+            .from("highlights")
+            .select("id, note")
+            .eq("text_id", text.id)
+            .eq("profile_id", userData.user.id)
+            .eq("selected_text", word)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
+        if (activeWordRef.current !== word) return;
         if (existing) setAddedVocab(true);
-
-        const { data: existingHighlight } = await supabase
-          .from("highlights")
-          .select("id, note")
-          .eq("text_id", text.id)
-          .eq("profile_id", userData.user.id)
-          .eq("selected_text", word)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
         if (existingHighlight) {
           setNoteId(existingHighlight.id);
           setNote(existingHighlight.note ?? "");
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Lookup failed");
+      if (activeWordRef.current === word) {
+        setError(err instanceof Error ? err.message : "Lookup failed");
+      }
     } finally {
-      setLoading(false);
+      if (activeWordRef.current === word) setLoading(false);
     }
   }
 
@@ -201,37 +238,48 @@ export default function ReaderView({
     setError(null);
   }
 
+  function renderTokens(list: ReturnType<typeof tokenize>) {
+    return list.map((token, i) =>
+      token.isWord ? (
+        <span
+          key={i}
+          onClick={() => handleWordClick(token.text)}
+          className={`cursor-pointer rounded px-0.5 hover:bg-accent/15 ${
+            selectedWord === token.text ? "bg-accent/30" : ""
+          } ${
+            notedWords.has(token.text)
+              ? "underline decoration-accent decoration-2 underline-offset-2"
+              : ""
+          }`}
+        >
+          {token.text}
+        </span>
+      ) : (
+        <span key={i}>{token.text}</span>
+      ),
+    );
+  }
+
   return (
-    <div className="flex flex-1 flex-col md:flex-row">
+    <div className="flex min-h-0 flex-1 flex-col md:flex-row">
       <main className="flex-1 overflow-y-auto px-6 py-8">
         <div className="mx-auto max-w-2xl">
-        <h1 className="mb-6 font-serif text-2xl font-semibold">{text.title}</h1>
+        <div className="mb-6 flex items-start justify-between gap-3">
+          <h1 className="font-serif text-2xl font-semibold">
+            {renderTokens(tokenize(text.title))}
+          </h1>
+          <Button variant="outline" size="sm" onClick={handleCopy} className="shrink-0">
+            {copied ? "Copied!" : "Copy text"}
+          </Button>
+        </div>
         <p className="font-serif text-lg leading-8 whitespace-pre-wrap">
-          {tokens.map((token, i) =>
-            token.isWord ? (
-              <span
-                key={i}
-                onClick={() => handleWordClick(token.text)}
-                className={`cursor-pointer rounded px-0.5 hover:bg-accent/15 ${
-                  selectedWord === token.text ? "bg-accent/30" : ""
-                } ${
-                  notedWords.has(token.text)
-                    ? "underline decoration-accent decoration-2 underline-offset-2"
-                    : ""
-                }`}
-              >
-                {token.text}
-              </span>
-            ) : (
-              <span key={i}>{token.text}</span>
-            ),
-          )}
+          {renderTokens(tokens)}
         </p>
         </div>
       </main>
 
       {/* Desktop: persistent side panel */}
-      <aside className="hidden w-80 shrink-0 border-l border-hairline bg-surface p-5 md:block">
+      <aside className="hidden w-80 shrink-0 overflow-y-auto border-l border-hairline bg-surface p-5 md:block">
         {selectedWord ? (
           <LookupPanelContent
             word={selectedWord}

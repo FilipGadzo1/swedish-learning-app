@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Button, Card, Progress, ProgressValue } from "@tessera/ui";
 import { createClient } from "@/lib/supabase/client";
 import { nextSrsState, type Rating, type SrsState } from "@/lib/srs";
 import ErrorMessage from "@/components/ErrorMessage";
@@ -102,13 +103,15 @@ export default function DrillView() {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-6 p-6">
-      <p className="text-xs text-muted">
-        {index + 1} of {cards.length}
-      </p>
+      <Progress value={index + 1} max={cards.length} size="sm" aria-label="Drill progress">
+        <ProgressValue className="mx-auto text-xs text-muted">
+          {() => `${index + 1} of ${cards.length}`}
+        </ProgressValue>
+      </Progress>
 
-      <div
+      <Card
         onClick={() => setFlipped(true)}
-        className="flex min-h-[180px] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border border-hairline bg-surface p-8 text-center"
+        className="min-h-[180px] w-full cursor-pointer items-center justify-center gap-3 p-8 text-center"
       >
         <p className="font-serif text-2xl font-semibold">{card.word}</p>
         {!flipped ? (
@@ -125,38 +128,22 @@ export default function DrillView() {
         ) : (
           <p className="text-xs text-muted">No dictionary data cached for this word.</p>
         )}
-      </div>
+      </Card>
 
       {flipped && (
         <div className="grid w-full grid-cols-4 gap-2">
-          <button
-            onClick={() => handleRate("again")}
-            disabled={rating}
-            className="rounded-lg border border-hairline py-2 text-xs font-medium hover:border-accent disabled:opacity-50"
-          >
+          <Button variant="outline" color="neutral" size="sm" onClick={() => handleRate("again")} disabled={rating}>
             Again
-          </button>
-          <button
-            onClick={() => handleRate("hard")}
-            disabled={rating}
-            className="rounded-lg border border-hairline py-2 text-xs font-medium hover:border-accent disabled:opacity-50"
-          >
+          </Button>
+          <Button variant="outline" color="neutral" size="sm" onClick={() => handleRate("hard")} disabled={rating}>
             Hard
-          </button>
-          <button
-            onClick={() => handleRate("good")}
-            disabled={rating}
-            className="rounded-lg border border-hairline py-2 text-xs font-medium hover:border-accent disabled:opacity-50"
-          >
+          </Button>
+          <Button variant="outline" color="neutral" size="sm" onClick={() => handleRate("good")} disabled={rating}>
             Good
-          </button>
-          <button
-            onClick={() => handleRate("easy")}
-            disabled={rating}
-            className="rounded-lg bg-accent py-2 text-xs font-medium text-foreground hover:opacity-90 disabled:opacity-50"
-          >
+          </Button>
+          <Button size="sm" onClick={() => handleRate("easy")} disabled={rating}>
             Easy
-          </button>
+          </Button>
         </div>
       )}
     </main>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Button, Field, FieldLabel, Textarea } from "@tessera/ui";
 import ErrorMessage from "@/components/ErrorMessage";
 
 type LookupGrammar = Record<string, string>;
@@ -10,6 +11,7 @@ export type LookupData = {
   englishMeanings: string[];
   notes: string | null;
   grammar: LookupGrammar;
+  recognized?: boolean;
 };
 
 const GRAMMAR_LABELS: Record<string, string> = {
@@ -48,14 +50,14 @@ export default function LookupPanelContent({
   loading: boolean;
   error: string | null;
   data: LookupData | null;
-  note: string;
-  onNoteChange: (value: string) => void;
-  onSaveNote: () => void;
-  savingNote: boolean;
-  noteSaved: boolean;
-  onAddVocab: () => void;
-  addingVocab: boolean;
-  addedVocab: boolean;
+  note?: string;
+  onNoteChange?: (value: string) => void;
+  onSaveNote?: () => void;
+  savingNote?: boolean;
+  noteSaved?: boolean;
+  onAddVocab?: () => void;
+  addingVocab?: boolean;
+  addedVocab?: boolean;
 }) {
   return (
     <div>
@@ -90,32 +92,30 @@ export default function LookupPanelContent({
             <p className="font-serif text-xs italic text-muted">{data.notes}</p>
           )}
 
-          <button
-            onClick={onAddVocab}
-            disabled={addingVocab || addedVocab}
-            className="self-start rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium hover:border-accent hover:text-accent disabled:opacity-50"
-          >
-            {addedVocab ? "Added to vocab" : addingVocab ? "Adding..." : "+ Add to vocab"}
-          </button>
-
-          <div className="mt-2 border-t border-hairline pt-3">
-            <label className="mb-1 block text-xs text-muted">
-              Your note
-            </label>
-            <textarea
-              value={note}
-              onChange={(e) => onNoteChange(e.target.value)}
-              rows={2}
-              className="w-full rounded-lg border border-hairline bg-background px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
-            />
-            <button
-              onClick={onSaveNote}
-              disabled={savingNote}
-              className="mt-2 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-foreground hover:opacity-90 disabled:opacity-50"
+          {onAddVocab && data.recognized !== false && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onAddVocab}
+              loading={addingVocab}
+              disabled={addedVocab}
+              className="self-start"
             >
-              {savingNote ? "Saving..." : noteSaved ? "Saved" : "Save note"}
-            </button>
-          </div>
+              {addedVocab ? "Added to vocab" : "+ Add to vocab"}
+            </Button>
+          )}
+
+          {onNoteChange && onSaveNote && (
+            <div className="mt-2 border-t border-hairline pt-3">
+              <Field>
+                <FieldLabel>Your note</FieldLabel>
+                <Textarea value={note ?? ""} onChange={(e) => onNoteChange(e.target.value)} rows={2} />
+              </Field>
+              <Button size="sm" onClick={onSaveNote} loading={savingNote} className="mt-2">
+                {noteSaved ? "Saved" : "Save note"}
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

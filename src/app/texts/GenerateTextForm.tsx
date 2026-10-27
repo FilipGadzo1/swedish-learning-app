@@ -2,6 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Button,
+  Card,
+  Field,
+  FieldLabel,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@tessera/ui";
 import { addGuestText } from "@/lib/guest";
 import ErrorMessage from "@/components/ErrorMessage";
 
@@ -48,34 +60,37 @@ export default function GenerateTextForm({ guest = false }: { guest?: boolean })
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-3 flex flex-col gap-2 rounded-lg border border-hairline bg-surface p-4">
-      <div className="flex gap-2">
-        <select
-          value={level}
-          onChange={(e) => setLevel(e.target.value as typeof LEVELS[number])}
-          className="rounded-lg border border-hairline bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
-        >
-          {LEVELS.map((l) => (
-            <option key={l} value={l}>
-              {l}
-            </option>
-          ))}
-        </select>
-        <input
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          placeholder="Topic (optional)"
-          className="flex-1 rounded-lg border border-hairline bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
-        />
-      </div>
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-      <button
-        type="submit"
-        disabled={submitting}
-        className="self-start rounded-lg bg-accent px-4 py-2 text-sm font-medium text-foreground hover:opacity-90 disabled:opacity-50"
-      >
-        {submitting ? "Generating..." : "Generate a new text"}
-      </button>
-    </form>
+    <Card className="mt-3 p-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <div className="flex gap-2">
+          <Field>
+            <FieldLabel>Level</FieldLabel>
+            <Select
+              value={level}
+              onValueChange={(v) => setLevel(v as typeof LEVELS[number])}
+            >
+              <SelectTrigger className="w-24">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LEVELS.map((l) => (
+                  <SelectItem key={l} value={l}>
+                    {l}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field className="flex-1">
+            <FieldLabel>Topic (optional)</FieldLabel>
+            <Input value={topic} onChange={(e) => setTopic(e.target.value)} />
+          </Field>
+        </div>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        <Button type="submit" loading={submitting} className="self-start">
+          Generate a new text
+        </Button>
+      </form>
+    </Card>
   );
 }

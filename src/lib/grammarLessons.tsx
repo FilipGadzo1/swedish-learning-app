@@ -14,7 +14,7 @@ function ExampleTable({ rows }: { rows: [string, string][] }) {
         {rows.map(([sv, en]) => (
           <tr key={sv} className="border-b border-hairline last:border-b-0">
             <td className="py-1.5 pr-4 font-serif">{sv}</td>
-            <td className="py-1.5 text-muted">{en}</td>
+            <td className="py-1.5 text-muted-foreground">{en}</td>
           </tr>
         ))}
       </tbody>

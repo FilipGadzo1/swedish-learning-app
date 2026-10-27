@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
-  Card,
   Field,
   FieldLabel,
   Input,
@@ -60,37 +59,35 @@ export default function GenerateTextForm({ guest = false }: { guest?: boolean })
   }
 
   return (
-    <Card className="mt-3 p-4">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <div className="flex gap-2">
-          <Field>
-            <FieldLabel>Level</FieldLabel>
-            <Select
-              value={level}
-              onValueChange={(v) => setLevel(v as typeof LEVELS[number])}
-            >
-              <SelectTrigger className="w-24">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {LEVELS.map((l) => (
-                  <SelectItem key={l} value={l}>
-                    {l}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field className="flex-1">
-            <FieldLabel>Topic (optional)</FieldLabel>
-            <Input value={topic} onChange={(e) => setTopic(e.target.value)} />
-          </Field>
-        </div>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-        <Button type="submit" loading={submitting} className="self-start">
-          Generate a new text
-        </Button>
-      </form>
-    </Card>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <div className="flex gap-2">
+        <Field>
+          <FieldLabel>Level</FieldLabel>
+          <Select
+            value={level}
+            onValueChange={(v) => setLevel(v as typeof LEVELS[number])}
+          >
+            <SelectTrigger className="w-24">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {LEVELS.map((l) => (
+                <SelectItem key={l} value={l}>
+                  {l}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field className="flex-1">
+          <FieldLabel>Topic (optional)</FieldLabel>
+          <Input value={topic} onChange={(e) => setTopic(e.target.value)} />
+        </Field>
+      </div>
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+      <Button type="submit" loading={submitting} className="self-start">
+        Generate a new text
+      </Button>
+    </form>
   );
 }

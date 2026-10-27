@@ -16,10 +16,14 @@ export function nextSrsState(
   prev: SrsState | null | undefined,
   rating: Rating,
 ): { state: SrsState; dueAt: Date } {
-  const state = prev ?? DEFAULT_SRS_STATE;
+  // Rows inserted via the DB default have srs_state = {} — fill each missing or
+  // malformed field from the default so those rows self-heal on next rating.
+  const field = (v: unknown, fallback: number) =>
+    typeof v === "number" && Number.isFinite(v) ? v : fallback;
+  let ef = field(prev?.ef, DEFAULT_SRS_STATE.ef);
+  let interval = field(prev?.interval, DEFAULT_SRS_STATE.interval);
+  let repetitions = field(prev?.repetitions, DEFAULT_SRS_STATE.repetitions);
   const quality = QUALITY[rating];
-
-  let { ef, interval, repetitions } = state;
 
   if (quality < 3) {
     repetitions = 0;

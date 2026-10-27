@@ -18,7 +18,7 @@ export default function GuestTextPage({ id }: { id: string }) {
 
   if (text === null) {
     return (
-      <main className="mx-auto w-full max-w-2xl flex-1 p-6 text-center text-sm text-muted">
+      <main className="mx-auto w-full max-w-2xl flex-1 p-6 text-center text-sm text-muted-foreground">
         Text not found in this browser&rsquo;s guest data.
       </main>
     );

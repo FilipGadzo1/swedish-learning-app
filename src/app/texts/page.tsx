@@ -1,11 +1,9 @@
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { GUEST_COOKIE } from "@/lib/guest";
-import AddTextForm from "./AddTextForm";
-import ImportPdfForm from "./ImportPdfForm";
-import GenerateTextForm from "./GenerateTextForm";
 import GuestTextsView from "./GuestTextsView";
 import TextList from "./TextList";
+import TextActions from "./TextActions";
 
 // Per-user data (auth + DB reads) — must run per-request, not be prerendered.
 export const instant = false;
@@ -28,12 +26,17 @@ export default async function TextsPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 p-6">
+    <main className="mx-auto w-full max-w-4xl flex-1 p-6">
       <h1 className="mb-4 font-serif text-xl font-semibold">Texts</h1>
-      <AddTextForm />
-      <ImportPdfForm />
-      <GenerateTextForm />
-      <TextList texts={texts ?? []} />
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+        <div className="order-1 md:order-2">
+          <TextActions />
+        </div>
+        <hr className="order-2 my-2 border-0 border-t border-hairline md:hidden" />
+        <div className="order-3 md:order-1">
+          <TextList texts={texts ?? []} />
+        </div>
+      </div>
     </main>
   );
 }

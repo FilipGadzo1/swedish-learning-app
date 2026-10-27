@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, Field, FieldLabel, Input, Textarea } from "@tessera/ui";
+import { Button, Field, FieldLabel, Input, Textarea } from "@tessera/ui";
 import { createClient } from "@/lib/supabase/client";
 import { addGuestText } from "@/lib/guest";
 import ErrorMessage from "@/components/ErrorMessage";
@@ -62,26 +62,24 @@ export default function AddTextForm({ guest = false }: { guest?: boolean }) {
   }
 
   return (
-    <Card className="p-4">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <Field>
-          <FieldLabel>Title</FieldLabel>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
-        </Field>
-        <Field>
-          <FieldLabel>Text</FieldLabel>
-          <Textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Paste Swedish text here..."
-            rows={5}
-          />
-        </Field>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-        <Button type="submit" loading={submitting} className="self-start">
-          Add text
-        </Button>
-      </form>
-    </Card>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <Field>
+        <FieldLabel>Title</FieldLabel>
+        <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+      </Field>
+      <Field>
+        <FieldLabel>Text</FieldLabel>
+        <Textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Paste Swedish text here..."
+          rows={5}
+        />
+      </Field>
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+      <Button type="submit" loading={submitting} className="self-start">
+        Add text
+      </Button>
+    </form>
   );
 }

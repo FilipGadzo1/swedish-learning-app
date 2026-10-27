@@ -83,24 +83,34 @@ export default function VocabTableWithLookup({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {group.items.map((item) => (
-                          <TableRow
-                            key={item.id}
-                            onClick={() => setSelected(item)}
-                            data-state={selected?.id === item.id ? "selected" : undefined}
-                            className="cursor-pointer"
-                          >
-                            <TableCell className="px-4 font-serif">{item.word}</TableCell>
-                            <TableCell className="px-4 text-muted">
-                              {item.meanings.join(", ")}
-                            </TableCell>
-                            <TableCell
-                              className={`px-4 ${item.isDue ? "font-medium text-accent" : "text-muted"}`}
+                        {group.items.map((item) => {
+                          const isSelected = selected?.id === item.id;
+                          return (
+                            <TableRow
+                              key={item.id}
+                              onClick={() => setSelected(item)}
+                              className={`cursor-pointer ${isSelected ? "bg-accent/15 hover:bg-accent/15" : ""}`}
                             >
-                              {item.dueLabel}
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                              <TableCell className="px-4 font-serif">{item.word}</TableCell>
+                              <TableCell
+                                className={`px-4 ${isSelected ? "text-foreground" : "text-muted-foreground"}`}
+                              >
+                                {item.meanings.join(", ")}
+                              </TableCell>
+                              <TableCell
+                                className={`px-4 ${
+                                  item.isDue
+                                    ? "font-medium text-accent"
+                                    : isSelected
+                                      ? "text-foreground"
+                                      : "text-muted-foreground"
+                                }`}
+                              >
+                                {item.dueLabel}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </Card>
@@ -113,7 +123,7 @@ export default function VocabTableWithLookup({
 
       {/* Desktop: persistent side panel */}
       <aside className="hidden w-80 shrink-0 overflow-y-auto border-l border-hairline bg-surface p-5 md:block">
-        {panel || <p className="text-sm text-muted">Click a word to see its grammar.</p>}
+        {panel || <p className="text-sm text-muted-foreground">Click a word to see its grammar.</p>}
       </aside>
 
       {/* Mobile: bottom sheet */}

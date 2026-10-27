@@ -19,7 +19,7 @@ export default function GrammarSidebar({
     <Link
       href={`/grammar/${slug}`}
       className={`flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm ${
-        active ? "bg-accent/15 font-medium text-accent" : "text-muted hover:text-foreground"
+        active ? "bg-accent/15 font-medium text-accent" : "text-muted-foreground hover:text-foreground"
       }`}
     >
       <span>{title}</span>

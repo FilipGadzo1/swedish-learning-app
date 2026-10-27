@@ -20,7 +20,7 @@ export default function NavLinks() {
           <Link
             key={link.href}
             href={link.href}
-            className={`shrink-0 ${active ? "text-accent font-medium" : "text-muted hover:text-foreground"}`}
+            className={`shrink-0 ${active ? "text-accent font-medium" : "text-muted-foreground hover:text-foreground"}`}
           >
             {link.label}
           </Link>

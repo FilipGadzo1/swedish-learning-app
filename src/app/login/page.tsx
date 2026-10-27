@@ -32,7 +32,7 @@ export default function LoginPage() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-6 p-8">
       <h1 className="font-serif text-2xl font-semibold">Svenska</h1>
-      <p className="max-w-sm text-center text-sm text-muted">
+      <p className="max-w-sm text-center text-sm text-muted-foreground">
         Sign in to save your progress across devices.
       </p>
       <Button variant="outline" onClick={signInWithGoogle}>
@@ -41,7 +41,7 @@ export default function LoginPage() {
       <Button variant="link" onClick={continueAsGuest}>
         Continue as guest
       </Button>
-      <p className="max-w-sm text-center text-xs text-muted">
+      <p className="max-w-sm text-center text-xs text-muted-foreground">
         Guest data stays only in this browser and is lost if you clear site
         data — it never syncs to an account.
       </p>

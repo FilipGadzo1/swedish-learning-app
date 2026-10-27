@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button, Card, Progress, ProgressValue } from "@tessera/ui";
 import { createClient } from "@/lib/supabase/client";
-import { nextSrsState, type Rating, type SrsState } from "@/lib/srs";
+import { nextSrsState, type SrsState } from "@/lib/srs";
 import ErrorMessage from "@/components/ErrorMessage";
 
 type DictData = {
@@ -20,12 +20,35 @@ type VocabCard = {
   dictionary_cache: { data: DictData } | null;
 };
 
+const REQUEUE_OFFSET = 3;
+const CONFIRMATION_MS = 1400;
+
+const dayLabel = (n: number) => `${n} day${n === 1 ? "" : "s"}`;
+
+function RateLabel({ label, hint }: { label: string; hint: string }) {
+  return (
+    <span className="flex flex-col items-center leading-tight">
+      <span>{label}</span>
+      <span className="text-[10px] opacity-70">{hint}</span>
+    </span>
+  );
+}
+
 export default function DrillView() {
   const [cards, setCards] = useState<VocabCard[] | null>(null);
-  const [index, setIndex] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rating, setRating] = useState(false);
+  const [confirmation, setConfirmation] = useState<string | null>(null);
+  const confirmationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (confirmationTimeoutRef.current) clearTimeout(confirmationTimeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -43,27 +66,44 @@ export default function DrillView() {
         setError(fetchError.message);
         return;
       }
-      setCards((data ?? []) as unknown as VocabCard[]);
+      const loaded = (data ?? []) as unknown as VocabCard[];
+      setCards(loaded);
+      setTotal(loaded.length);
     }
     load();
   }, []);
 
-  async function handleRate(r: Rating) {
+  function handleAgain() {
+    setCards((prev) => {
+      if (!prev) return prev;
+      const next = [...prev];
+      const [c] = next.splice(0, 1);
+      next.splice(Math.min(REQUEUE_OFFSET, next.length), 0, c);
+      return next;
+    });
+    setFlipped(false);
+  }
+
+  async function handleKnew() {
     if (!cards) return;
-    const card = cards[index];
+    const card = cards[0];
     setRating(true);
 
     try {
       const supabase = createClient();
-      const { state, dueAt } = nextSrsState(card.srs_state, r);
+      const { state, dueAt } = nextSrsState(card.srs_state, "good");
       const { error: updateError } = await supabase
         .from("vocab_items")
         .update({ srs_state: state, due_at: dueAt.toISOString() })
         .eq("id", card.id);
       if (updateError) throw new Error(updateError.message);
 
+      setCards((prev) => (prev ? prev.slice(1) : prev));
       setFlipped(false);
-      setIndex((i) => i + 1);
+      setCompletedCount((n) => n + 1);
+      setConfirmation(`Saved — next review in ${dayLabel(state.interval)}`);
+      if (confirmationTimeoutRef.current) clearTimeout(confirmationTimeoutRef.current);
+      confirmationTimeoutRef.current = setTimeout(() => setConfirmation(null), CONFIRMATION_MS);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save rating");
     } finally {
@@ -81,16 +121,21 @@ export default function DrillView() {
 
   if (cards === null) {
     return (
-      <main className="mx-auto w-full max-w-md flex-1 p-6 text-center text-sm text-muted">
+      <main className="mx-auto w-full max-w-md flex-1 p-6 text-center text-sm text-muted-foreground">
         Loading...
       </main>
     );
   }
 
-  if (cards.length === 0 || index >= cards.length) {
+  if (cards.length === 0) {
     return (
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
         <p className="font-serif text-lg">You&rsquo;re all caught up.</p>
+        {confirmation && (
+          <p role="status" className="text-xs text-muted-foreground">
+            {confirmation}
+          </p>
+        )}
         <Link href="/vocab" className="text-sm text-accent hover:opacity-80">
           Back to vocabulary
         </Link>
@@ -98,51 +143,68 @@ export default function DrillView() {
     );
   }
 
-  const card = cards[index];
+  const card = cards[0];
   const dict = card.dictionary_cache?.data;
+  const knewInterval = nextSrsState(card.srs_state, "good").state.interval;
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-6 p-6">
-      <Progress value={index + 1} max={cards.length} size="sm" aria-label="Drill progress">
-        <ProgressValue className="mx-auto text-xs text-muted">
-          {() => `${index + 1} of ${cards.length}`}
-        </ProgressValue>
-      </Progress>
+      <div className="flex w-full flex-col gap-2">
+        <Progress value={completedCount} max={total} size="sm" aria-label="Drill progress">
+          <ProgressValue className="mx-auto text-xs text-muted-foreground">
+            {() => `${completedCount} of ${total} done`}
+          </ProgressValue>
+        </Progress>
+        <p className="text-center text-xs text-muted-foreground">
+          Rating updates when you&rsquo;ll see this word again — check the full schedule on the{" "}
+          <Link href="/vocab" className="text-accent hover:opacity-80">
+            Vocab page
+          </Link>
+          .
+        </p>
+      </div>
 
-      <Card
+      {/* Keyed by card so a new card mounts unflipped instead of animating back
+          and briefly showing its answer on the back face. */}
+      <div
+        key={card.id}
         onClick={() => setFlipped(true)}
-        className="min-h-[180px] w-full cursor-pointer items-center justify-center gap-3 p-8 text-center"
+        className="card-flip-container h-[200px] w-full cursor-pointer"
       >
-        <p className="font-serif text-2xl font-semibold">{card.word}</p>
-        {!flipped ? (
-          <p className="text-xs text-muted">Tap to flip</p>
-        ) : dict ? (
-          <div className="mt-2 flex flex-col gap-2">
-            <p className="text-sm">{dict.englishMeanings.join(", ")}</p>
-            {Object.keys(dict.grammar).length > 0 && (
-              <p className="text-xs text-muted">
-                {Object.values(dict.grammar).join(" · ")}
-              </p>
+        <div className={`card-flip-inner h-full w-full ${flipped ? "flipped" : ""}`}>
+          <Card className="card-flip-face items-center justify-center gap-3 p-8 text-center">
+            <p className="font-serif text-2xl font-semibold">{card.word}</p>
+            <p className="text-xs text-muted-foreground">Tap to flip</p>
+          </Card>
+          <Card className="card-flip-face card-flip-face-back items-center justify-center gap-3 overflow-y-auto p-8 text-center">
+            <p className="font-serif text-2xl font-semibold">{card.word}</p>
+            {dict ? (
+              <div className="mt-2 flex flex-col gap-2">
+                <p className="text-sm">{dict.englishMeanings.join(", ")}</p>
+                {Object.keys(dict.grammar).length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {Object.values(dict.grammar).join(" · ")}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">No dictionary data cached for this word.</p>
             )}
-          </div>
-        ) : (
-          <p className="text-xs text-muted">No dictionary data cached for this word.</p>
-        )}
-      </Card>
+          </Card>
+        </div>
+      </div>
+
+      <p role="status" className="h-4 text-xs text-muted-foreground">
+        {confirmation}
+      </p>
 
       {flipped && (
-        <div className="grid w-full grid-cols-4 gap-2">
-          <Button variant="outline" color="neutral" size="sm" onClick={() => handleRate("again")} disabled={rating}>
-            Again
+        <div className="grid w-full grid-cols-2 gap-2">
+          <Button variant="outline" color="neutral" className="h-auto py-2" onClick={handleAgain} disabled={rating}>
+            <RateLabel label="Didn't know it" hint="see it again soon" />
           </Button>
-          <Button variant="outline" color="neutral" size="sm" onClick={() => handleRate("hard")} disabled={rating}>
-            Hard
-          </Button>
-          <Button variant="outline" color="neutral" size="sm" onClick={() => handleRate("good")} disabled={rating}>
-            Good
-          </Button>
-          <Button size="sm" onClick={() => handleRate("easy")} disabled={rating}>
-            Easy
+          <Button className="h-auto py-2" onClick={handleKnew} disabled={rating}>
+            <RateLabel label="Knew it" hint={`next review in ${knewInterval}d`} />
           </Button>
         </div>
       )}

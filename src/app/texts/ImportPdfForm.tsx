@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
-  Card,
   Field,
   FieldLabel,
   FileUpload,
@@ -64,30 +63,28 @@ export default function ImportPdfForm({ guest = false }: { guest?: boolean }) {
   }
 
   return (
-    <Card className="mt-3 p-4">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <Field>
-          <FieldLabel>Title</FieldLabel>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
-        </Field>
-        <Field>
-          <FieldLabel>PDF file</FieldLabel>
-          <FileUpload
-            accept="application/pdf"
-            maxFiles={1}
-            value={file ? [file] : []}
-            onValueChange={(files) => setFile(files[0] ?? null)}
-          >
-            <FileUploadDropzone />
-            <FileUploadRejections />
-            <FileUploadList />
-          </FileUpload>
-        </Field>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-        <Button type="submit" loading={submitting} disabled={!file} className="self-start">
-          Import PDF
-        </Button>
-      </form>
-    </Card>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <Field>
+        <FieldLabel>Title</FieldLabel>
+        <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+      </Field>
+      <Field>
+        <FieldLabel>PDF file</FieldLabel>
+        <FileUpload
+          accept="application/pdf"
+          maxFiles={1}
+          value={file ? [file] : []}
+          onValueChange={(files) => setFile(files[0] ?? null)}
+        >
+          <FileUploadDropzone />
+          <FileUploadRejections />
+          <FileUploadList />
+        </FileUpload>
+      </Field>
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+      <Button type="submit" loading={submitting} disabled={!file} className="self-start">
+        Import PDF
+      </Button>
+    </form>
   );
 }

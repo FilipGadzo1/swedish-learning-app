@@ -5,11 +5,19 @@
    in layout.tsx) is the single source of truth for theme colors. These
    mappings keep the app's existing bg-surface/border-hairline/etc. utility
    names working against Tessera's tokens instead of duplicating them. */
+/* --color-muted is intentionally left alone here — Tessera's own stylesheet
+   already defines it correctly (a muted surface tone, e.g. for selected/hover
+   table rows), distinct from --color-muted-foreground (dimmed text). A
+   previous version of this file aliased --color-muted to --muted-foreground
+   to keep this app's own `text-muted` utility working, which made Tessera's
+   `bg-muted` resolve to the same color as its own `text-muted-foreground` —
+   invisible text on a same-colored background. Use `text-muted-foreground`
+   in this app's own code instead; `--color-muted-foreground` already points
+   at the correct token without needing an override here. */
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--card);
   --color-foreground: var(--foreground);
-  --color-muted: var(--muted-foreground);
   --color-accent: var(--primary);
   --color-hairline: var(--border);
   --font-sans: var(--font-archivo);
@@ -34,4 +42,36 @@ body {
 ::view-transition-old(root) {
   /* Keep old state visible and static while new state grows over it */
   animation: none;
+}
+
+/* ── Drill card 3D flip ── */
+.card-flip-container {
+  perspective: 1000px;
+}
+
+.card-flip-inner {
+  position: relative;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.card-flip-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.card-flip-face-back {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-flip-inner {
+    transition: none;
+  }
 }

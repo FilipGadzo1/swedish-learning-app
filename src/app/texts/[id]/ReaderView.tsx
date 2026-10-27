@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@tessera/ui";
 import { createClient } from "@/lib/supabase/client";
 import { tokenize } from "@/lib/tokenize";
+import { DEFAULT_SRS_STATE } from "@/lib/srs";
 import LookupPanelContent, { type LookupData } from "./LookupPanelContent";
 
 export default function ReaderView({
@@ -215,6 +216,8 @@ export default function ReaderView({
           profile_id: userData.user.id,
           word: lemma,
           source_text_id: text.id,
+          srs_state: DEFAULT_SRS_STATE,
+          due_at: new Date().toISOString(),
         },
         { onConflict: "profile_id,word", ignoreDuplicates: true },
       );
@@ -296,7 +299,7 @@ export default function ReaderView({
             addedVocab={addedVocab}
           />
         ) : (
-          <p className="text-sm text-muted">Click a word to look it up.</p>
+          <p className="text-sm text-muted-foreground">Click a word to look it up.</p>
         )}
       </aside>
 

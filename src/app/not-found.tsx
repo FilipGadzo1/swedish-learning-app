@@ -6,7 +6,7 @@ export default function NotFound() {
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
       <p className="text-sm font-medium text-accent">404</p>
       <h1 className="font-serif text-2xl font-semibold">Page not found</h1>
-      <p className="font-serif text-muted">
+      <p className="font-serif text-muted-foreground">
         Den här sidan finns inte — this page doesn&apos;t exist (yet).
       </p>
       <Link href="/texts" className={buttonVariants()}>

@@ -2,6 +2,35 @@ import { NextRequest, NextResponse } from "next/server";
 import { anthropic } from "@/lib/anthropic";
 import { createClient } from "@/lib/supabase/server";
 
+// Strips a markdown code fence if the model wraps its JSON in one despite
+// being told not to, and trims surrounding whitespace/prose around the braces.
+function extractJsonCandidate(text: string): string {
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  const body = fenced ? fenced[1] : text;
+  const start = body.indexOf("{");
+  const end = body.lastIndexOf("}");
+  if (start === -1 || end === -1 || end < start) return body.trim();
+  return body.slice(start, end + 1);
+}
+
+async function lookupWord(word: string): Promise<unknown> {
+  const message = await anthropic.messages.create({
+    model: "claude-sonnet-5-5",
+    // Was 500 — too tight for a verb/adjective entry plus a "recognized: false"
+    // explanation, which could silently truncate mid-JSON and fail to parse.
+    max_tokens: 1024,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: "user", content: word }],
+  });
+
+  const textBlock = message.content.find((b) => b.type === "text");
+  if (!textBlock || textBlock.type !== "text") {
+    throw new Error("No text response from model");
+  }
+
+  return JSON.parse(extractJsonCandidate(textBlock.text));
+}
+
 const SYSTEM_PROMPT = `You are a Swedish dictionary and grammar reference for an English-speaking learner.
 Given a single Swedish word (possibly inflected), respond with ONLY a JSON object, no prose, matching this shape:
 
@@ -63,26 +92,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(cached.data);
   }
 
-  const message = await anthropic.messages.create({
-    model: "claude-sonnet-5-5",
-    max_tokens: 500,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: word.trim() }],
-  });
-
-  const textBlock = message.content.find((b) => b.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    return NextResponse.json({ error: "No text response from model" }, { status: 502 });
-  }
-
+  // Occasionally the model wraps the JSON in a code fence or adds stray
+  // prose despite the prompt — extractJsonCandidate() handles that, but if
+  // parsing still fails (or the response was truncated), retry once before
+  // giving up, since this is usually a one-off formatting glitch.
   let parsed: unknown;
   try {
-    parsed = JSON.parse(textBlock.text);
+    parsed = await lookupWord(word.trim());
   } catch {
-    return NextResponse.json(
-      { error: "Model did not return valid JSON", raw: textBlock.text },
-      { status: 502 },
-    );
+    try {
+      parsed = await lookupWord(word.trim());
+    } catch (err) {
+      return NextResponse.json(
+        {
+          error:
+            "The dictionary lookup didn't come back in a usable format — please try again.",
+          detail: err instanceof Error ? err.message : String(err),
+        },
+        { status: 502 },
+      );
+    }
   }
 
   await supabase

@@ -208,7 +208,7 @@ export default function GuestReaderView({
             addedVocab={addedVocab}
           />
         ) : (
-          <p className="text-sm text-muted">Click a word to look it up.</p>
+          <p className="text-sm text-muted-foreground">Click a word to look it up.</p>
         )}
       </aside>
 

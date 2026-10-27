@@ -11,16 +11,19 @@ export type TextListItem = {
 export default function TextList({ texts }: { texts: TextListItem[] }) {
   if (texts.length === 0) {
     return (
-      <Card className="mt-6 px-4 py-6 text-center text-sm text-muted-foreground">
-        No texts yet — paste one above to get started.
+      <Card className="rounded-none px-4 py-6 text-center text-sm text-muted-foreground">
+        No texts yet — add one on the right to get started.
       </Card>
     );
   }
 
   return (
-    <Card className="mt-6 divide-y divide-border p-0">
+    <div className="flex flex-col gap-2">
       {texts.map((t) => (
-        <div key={t.id} className="flex items-center justify-between px-4 py-3">
+        <Card
+          key={t.id}
+          className="rounded-none flex-row items-center justify-between gap-3 px-4 py-3"
+        >
           <Link href={`/texts/${t.id}`} className="font-medium hover:text-accent">
             {t.title}
           </Link>
@@ -28,8 +31,8 @@ export default function TextList({ texts }: { texts: TextListItem[] }) {
             <Badge variant="outline">{t.source}</Badge>
             {t.level && <Badge variant="outline">{t.level}</Badge>}
           </div>
-        </div>
+        </Card>
       ))}
-    </Card>
+    </div>
   );
 }

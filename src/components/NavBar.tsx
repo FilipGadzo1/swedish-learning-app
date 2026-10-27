@@ -6,6 +6,7 @@ import { GUEST_COOKIE } from "@/lib/guest";
 import SignOutButton from "./SignOutButton";
 import NavLinks from "./NavLinks";
 import ThemeToggle from "./ThemeToggle";
+import BackButton from "./BackButton";
 
 export default async function NavBar() {
   const supabase = await createClient();
@@ -17,6 +18,7 @@ export default async function NavBar() {
   return (
     <nav className="flex shrink-0 items-center justify-between gap-2 border-b border-hairline px-3 py-3 text-xs sm:px-4 sm:text-sm">
       <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+        <BackButton />
         <Link href="/texts" className="shrink-0 font-semibold">
           Svenska
         </Link>
@@ -26,7 +28,7 @@ export default async function NavBar() {
         <ThemeToggle />
         {user ? (
           <>
-            <span className="hidden max-w-[12rem] truncate text-muted sm:inline">
+            <span className="hidden max-w-[12rem] truncate text-muted-foreground sm:inline">
               {user.email}
             </span>
             <SignOutButton />
@@ -37,7 +39,7 @@ export default async function NavBar() {
             <SignOutButton label="Exit guest mode" />
           </>
         ) : (
-          <Link href="/login" className="text-muted hover:text-foreground">
+          <Link href="/login" className="text-muted-foreground hover:text-foreground">
             Sign in
           </Link>
         )}

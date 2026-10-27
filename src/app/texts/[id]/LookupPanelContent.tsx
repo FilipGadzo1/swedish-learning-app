@@ -63,12 +63,12 @@ export default function LookupPanelContent({
     <div>
       <h2 className="font-serif text-xl font-semibold">{word}</h2>
 
-      {loading && <p className="mt-2 text-sm text-muted">Looking up...</p>}
+      {loading && <p className="mt-2 text-sm text-muted-foreground">Looking up...</p>}
       {error && <ErrorMessage className="mt-2">{error}</ErrorMessage>}
 
       {data && (
         <div className="mt-2 flex flex-col gap-3">
-          <p className="text-xs uppercase tracking-wide text-muted">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
             {data.partOfSpeech}
           </p>
           <p className="font-serif text-base">{data.englishMeanings.join(", ")}</p>
@@ -78,7 +78,7 @@ export default function LookupPanelContent({
               <tbody>
                 {Object.entries(data.grammar).map(([key, value]) => (
                   <tr key={key} className="border-t border-hairline">
-                    <td className="py-1.5 pr-2 text-muted">
+                    <td className="py-1.5 pr-2 text-muted-foreground">
                       {GRAMMAR_LABELS[key] ?? key}
                     </td>
                     <td className="py-1.5 font-medium text-accent">{value}</td>
@@ -89,7 +89,7 @@ export default function LookupPanelContent({
           )}
 
           {data.notes && (
-            <p className="font-serif text-xs italic text-muted">{data.notes}</p>
+            <p className="font-serif text-xs italic text-muted-foreground">{data.notes}</p>
           )}
 
           {onAddVocab && data.recognized !== false && (

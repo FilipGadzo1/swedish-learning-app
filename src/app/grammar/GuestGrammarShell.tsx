@@ -29,7 +29,7 @@ export default function GuestGrammarShell({
   return (
     <div className="flex flex-1 flex-col md:min-h-0 md:flex-row">
       <aside className="w-full shrink-0 border-b border-hairline bg-surface p-4 md:w-64 md:overflow-y-auto md:border-b-0 md:border-r">
-        <p className="mb-2 text-xs uppercase tracking-wide text-muted">Grammar</p>
+        <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Grammar</p>
         <nav className="flex flex-col gap-1">
           {lessons.map((lesson) => (
             <GrammarSidebar

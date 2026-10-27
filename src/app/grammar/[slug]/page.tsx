@@ -44,7 +44,7 @@ export default async function GrammarLessonPage({
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 p-6">
       <h1 className="mb-1 font-serif text-2xl font-semibold">{lesson.title}</h1>
-      <p className="mb-6 text-sm text-muted">{lesson.summary}</p>
+      <p className="mb-6 text-sm text-muted-foreground">{lesson.summary}</p>
       <div className="font-serif text-base leading-7">{lesson.body}</div>
     </main>
   );

@@ -1,13 +1,22 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button, Card, Field, FieldLabel, Input } from "@tessera/ui";
 import { createClient } from "@/lib/supabase/client";
 import { addGuestVocab, isGuestVocabWord } from "@/lib/guest";
 import { DEFAULT_SRS_STATE } from "@/lib/srs";
 import LookupPanelContent, { type LookupData } from "@/app/texts/[id]/LookupPanelContent";
 
-export default function QuickLookup({ guest = false }: { guest?: boolean }) {
+export default function QuickLookup({
+  guest = false,
+  onAdded,
+}: {
+  guest?: boolean;
+  /** Guest mode has no server page to refresh — the caller re-reads localStorage instead. */
+  onAdded?: () => void;
+}) {
+  const router = useRouter();
   const [word, setWord] = useState("");
   const [lookedUpWord, setLookedUpWord] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -86,6 +95,7 @@ export default function QuickLookup({ guest = false }: { guest?: boolean }) {
           sourceTextId: null,
         });
         setAddedVocab(true);
+        onAdded?.();
         return;
       }
 
@@ -121,6 +131,10 @@ export default function QuickLookup({ guest = false }: { guest?: boolean }) {
       );
       if (upsertError) throw new Error(upsertError.message);
       setAddedVocab(true);
+      // The add happened via the browser Supabase client, invisible to
+      // Next.js — the server-rendered list below won't know to re-fetch
+      // without this.
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add to vocab");
     } finally {

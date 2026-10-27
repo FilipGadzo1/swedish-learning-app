@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@tessera/ui";
 import { createClient } from "@/lib/supabase/client";
 import { tokenize } from "@/lib/tokenize";
@@ -13,6 +14,7 @@ export default function ReaderView({
   text: { id: string; title: string; content: string; source: string };
 }) {
   const tokens = tokenize(text.content);
+  const router = useRouter();
 
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [lookupData, setLookupData] = useState<LookupData | null>(null);
@@ -223,6 +225,9 @@ export default function ReaderView({
       );
       if (upsertError) throw new Error(upsertError.message);
       setAddedVocab(true);
+      // Added via the browser Supabase client — Next has no way to know,
+      // so the Vocab page would otherwise show stale data until a hard reload.
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add to vocab");
     } finally {

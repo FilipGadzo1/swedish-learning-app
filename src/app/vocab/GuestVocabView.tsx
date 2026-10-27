@@ -10,10 +10,15 @@ import QuickLookup from "./QuickLookup";
 export default function GuestVocabView() {
   const [items, setItems] = useState<GuestVocabItem[] | null>(null);
 
+  function load() {
+    setItems(listGuestVocab().sort((a, b) => a.dueAt.localeCompare(b.dueAt)));
+  }
+
   useEffect(() => {
-    function load() {
-      setItems(listGuestVocab().sort((a, b) => a.dueAt.localeCompare(b.dueAt)));
-    }
+    // Mount-only sync from localStorage (an external source), not a
+    // cascading update — `load` is also called later from QuickLookup's
+    // onAdded callback, outside any effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, []);
 
@@ -32,7 +37,7 @@ export default function GuestVocabView() {
           </Link>
         )}
       </div>
-      <QuickLookup guest />
+      <QuickLookup guest onAdded={load} />
     </>
   );
 

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { GUEST_COOKIE } from "@/lib/guest";
 import { getLesson } from "@/lib/grammarLessons";
+import RefreshOnLessonView from "../RefreshOnLessonView";
 
 // Per-user data (auth + DB reads) — must run per-request, not be prerendered.
 export const instant = false;
@@ -43,6 +44,7 @@ export default async function GrammarLessonPage({
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 p-6">
+      {userData.user && <RefreshOnLessonView slug={lesson.slug} />}
       <h1 className="mb-1 font-serif text-2xl font-semibold">{lesson.title}</h1>
       <p className="mb-6 text-sm text-muted-foreground">{lesson.summary}</p>
       <div className="font-serif text-base leading-7">{lesson.body}</div>

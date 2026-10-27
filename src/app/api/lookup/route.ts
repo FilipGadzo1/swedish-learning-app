@@ -65,18 +65,6 @@ If partOfSpeech is "adverb" or "other", grammar must be {} (empty object).
 Respond with raw JSON only — no markdown code fences, no explanation.`;
 
 export async function POST(req: NextRequest) {
-  // Unlike /texts, /vocab, /grammar this route isn't covered by proxy.ts's
-  // middleware gate (it only matches page prefixes, not /api/*) — without
-  // this check anyone could hit it directly, trigger billable model calls,
-  // and write into the shared dictionary_cache table (readable/insertable
-  // by anyone per its RLS policy).
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-  const isGuest = req.cookies.get("guestMode")?.value === "1";
-  if (!userData.user && !isGuest) {
-    return NextResponse.json({ error: "Not signed in" }, { status: 401 });
-  }
-
   let word: unknown;
   try {
     const body = await req.json();
@@ -90,7 +78,13 @@ export async function POST(req: NextRequest) {
   }
 
   const key = word.trim().toLowerCase();
+  const supabase = await createClient();
 
+  // Cache hits are a plain read of a table whose own RLS policy already
+  // allows anyone to read it ("dictionary cache readable by anyone") — no
+  // model call, no write, nothing to gate, so check it before touching auth
+  // at all. This is also why word-clicks that are already in the DB should
+  // feel instant: no auth round trip, just one lightweight select.
   const { data: cached } = await supabase
     .from("dictionary_cache")
     .select("data")
@@ -101,6 +95,17 @@ export async function POST(req: NextRequest) {
   // instead of serving data the UI can no longer make a correct decision from.
   if (cached && typeof (cached.data as { recognized?: boolean }).recognized === "boolean") {
     return NextResponse.json(cached.data);
+  }
+
+  // Past this point we're about to call the model (billable) and write to
+  // the shared cache — that's the part that actually needs gating. Unlike
+  // /texts, /vocab, /grammar this route isn't covered by proxy.ts's
+  // middleware gate (it only matches page prefixes, not /api/*), so without
+  // this check anyone could hit it directly and run up model costs.
+  const { data: userData } = await supabase.auth.getUser();
+  const isGuest = req.cookies.get("guestMode")?.value === "1";
+  if (!userData.user && !isGuest) {
+    return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   }
 
   // Occasionally the model wraps the JSON in a code fence or adds stray

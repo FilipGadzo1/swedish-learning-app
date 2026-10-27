@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button, Card, Progress, ProgressValue } from "@tessera/ui";
 import { createClient } from "@/lib/supabase/client";
 import { nextSrsState, type SrsState } from "@/lib/srs";
@@ -35,6 +36,7 @@ function RateLabel({ label, hint }: { label: string; hint: string }) {
 }
 
 export default function DrillView() {
+  const router = useRouter();
   const [cards, setCards] = useState<VocabCard[] | null>(null);
   const [total, setTotal] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
@@ -104,6 +106,8 @@ export default function DrillView() {
       setConfirmation(`Saved — next review in ${dayLabel(state.interval)}`);
       if (confirmationTimeoutRef.current) clearTimeout(confirmationTimeoutRef.current);
       confirmationTimeoutRef.current = setTimeout(() => setConfirmation(null), CONFIRMATION_MS);
+      // So the Vocab page's due counts/dates are fresh if visited right after.
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save rating");
     } finally {

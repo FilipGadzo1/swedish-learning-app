@@ -6,7 +6,9 @@ import { usePathname } from "next/navigation";
 function parentPath(pathname: string): string | null {
   if (pathname.startsWith("/texts/")) return "/texts";
   if (pathname.startsWith("/vocab/drill")) return "/vocab";
-  if (pathname.startsWith("/grammar/")) return "/grammar";
+  // No back button on /grammar/[slug]: unlike texts/vocab, there's no
+  // separate grammar list page to return to — "/grammar" just redirects
+  // back to the first lesson, and the lesson sidebar is always visible.
   return null;
 }
 

@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { GUEST_COOKIE } from "@/lib/guest";
 import { GRAMMAR_LESSONS } from "@/lib/grammarLessons";
 import GrammarSidebar from "./GrammarSidebar";
@@ -9,11 +9,10 @@ import GuestGrammarShell from "./GuestGrammarShell";
 export const instant = false;
 
 export default async function GrammarLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
   // Auth is gated in proxy.ts (middleware) — by the time this layout runs,
   // the request has already been redirected to /login if unauthenticated,
   // unless they're in guest mode.
-  const { data: userData } = await supabase.auth.getUser();
+  const { data: userData } = await getUser();
   if (!userData.user) {
     const cookieStore = await cookies();
     if (cookieStore.get(GUEST_COOKIE)?.value === "1") {
@@ -26,6 +25,7 @@ export default async function GrammarLayout({ children }: { children: React.Reac
     return null;
   }
 
+  const supabase = await createClient();
   const { data: progress } = await supabase
     .from("lesson_progress")
     .select("lesson_id, status")

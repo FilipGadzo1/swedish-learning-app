@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 const LINKS = [
   { href: "/texts", label: "Texts" },
-  { href: "/vocab", label: "Vocab" },
+  { href: "/vocab", label: "Vocabulary" },
   { href: "/grammar", label: "Grammar" },
 ];
 

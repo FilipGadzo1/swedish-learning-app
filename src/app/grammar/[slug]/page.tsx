@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { GUEST_COOKIE } from "@/lib/guest";
 import { getLesson } from "@/lib/grammarLessons";
 
@@ -18,11 +18,10 @@ export default async function GrammarLessonPage({
     notFound();
   }
 
-  const supabase = await createClient();
   // Auth is gated in proxy.ts (middleware) — by the time this page runs,
   // the request has already been redirected to /login if unauthenticated,
   // unless they're in guest mode.
-  const { data: userData } = await supabase.auth.getUser();
+  const { data: userData } = await getUser();
   if (!userData.user) {
     const cookieStore = await cookies();
     // Guest mode marks progress client-side in GuestGrammarShell instead.
@@ -30,6 +29,7 @@ export default async function GrammarLessonPage({
   } else {
     // Lightweight progress tracking — viewing a lesson marks it read, no
     // forced order or gating.
+    const supabase = await createClient();
     await supabase.from("lesson_progress").upsert(
       {
         profile_id: userData.user.id,

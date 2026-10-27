@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { cookies } from "next/headers";
 import { Badge } from "@tessera/ui";
-import { createClient } from "@/lib/supabase/server";
+import { getUser } from "@/lib/supabase/server";
 import { GUEST_COOKIE } from "@/lib/guest";
 import SignOutButton from "./SignOutButton";
 import NavLinks from "./NavLinks";
@@ -10,8 +10,7 @@ import ThemeToggle from "./ThemeToggle";
 import BackButton from "./BackButton";
 
 export default async function NavBar() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
+  const { data } = await getUser();
   const user = data.user;
   const cookieStore = await cookies();
   const isGuest = !user && cookieStore.get(GUEST_COOKIE)?.value === "1";

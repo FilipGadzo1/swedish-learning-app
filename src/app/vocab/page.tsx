@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { buttonVariants, Card } from "@tessera/ui";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { GUEST_COOKIE } from "@/lib/guest";
 import type { LookupData } from "@/app/texts/[id]/LookupPanelContent";
 import GuestVocabView from "./GuestVocabView";
@@ -18,16 +18,16 @@ type VocabRow = {
 };
 
 export default async function VocabPage() {
-  const supabase = await createClient();
   // Auth is gated in proxy.ts (middleware) — by the time this page runs,
   // the request has already been redirected to /login if unauthenticated.
-  const { data: userData } = await supabase.auth.getUser();
+  const { data: userData } = await getUser();
   if (!userData.user) {
     const cookieStore = await cookies();
     if (cookieStore.get(GUEST_COOKIE)?.value === "1") return <GuestVocabView />;
     return null;
   }
 
+  const supabase = await createClient();
   const { data } = await supabase
     .from("vocab_items")
     .select("id, word, due_at, dictionary_cache(data)")

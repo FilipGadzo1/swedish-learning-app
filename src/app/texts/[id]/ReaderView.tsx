@@ -5,8 +5,18 @@ import { useRouter } from "next/navigation";
 import { Button } from "@tessera/ui";
 import { createClient } from "@/lib/supabase/client";
 import { tokenize } from "@/lib/tokenize";
+import { buildRenderUnits } from "@/lib/phrasalVerbs";
 import { DEFAULT_SRS_STATE } from "@/lib/srs";
 import LookupPanelContent, { type LookupData } from "./LookupPanelContent";
+
+type SubWord = {
+  word: string;
+  loading: boolean;
+  error: string | null;
+  data: LookupData | null;
+  adding: boolean;
+  added: boolean;
+};
 
 export default function ReaderView({
   text,
@@ -20,16 +30,23 @@ export default function ReaderView({
   const [lookupData, setLookupData] = useState<LookupData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [note, setNote] = useState("");
-  const [noteId, setNoteId] = useState<string | null>(null);
-  const [savingNote, setSavingNote] = useState(false);
-  const [noteSaved, setNoteSaved] = useState(false);
   const [addingVocab, setAddingVocab] = useState(false);
   const [addedVocab, setAddedVocab] = useState(false);
-  const [notedWords, setNotedWords] = useState<Set<string>>(new Set());
+  const [selectedPhrase, setSelectedPhrase] = useState<{
+    key: string;
+    matchedText: string;
+    words: string[];
+  } | null>(null);
+  const [phraseData, setPhraseData] = useState<LookupData | null>(null);
+  const [phraseLoading, setPhraseLoading] = useState(false);
+  const [phraseError, setPhraseError] = useState<string | null>(null);
+  const [phraseAddingVocab, setPhraseAddingVocab] = useState(false);
+  const [phraseAddedVocab, setPhraseAddedVocab] = useState(false);
+  const [subWords, setSubWords] = useState<SubWord[]>([]);
   const [copied, setCopied] = useState(false);
   const lookupCacheRef = useRef<Map<string, LookupData>>(new Map());
   const activeWordRef = useRef<string | null>(null);
+  const activePhraseRef = useRef<string | null>(null);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -49,38 +66,37 @@ export default function ReaderView({
     }
   }
 
-  useEffect(() => {
-    let cancelled = false;
-    async function loadNotedWords() {
-      const supabase = createClient();
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) return;
-
-      const { data } = await supabase
-        .from("highlights")
-        .select("selected_text, note")
-        .eq("text_id", text.id)
-        .eq("profile_id", userData.user.id)
-        .not("note", "is", null);
-
-      if (cancelled || !data) return;
-      setNotedWords(
-        new Set(data.filter((h) => h.note && h.note.trim()).map((h) => h.selected_text)),
-      );
+  async function fetchLookup(word: string): Promise<LookupData> {
+    const cached = lookupCacheRef.current.get(word.toLowerCase());
+    if (cached) return cached;
+    const res = await fetch("/api/lookup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ word }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error ?? `Lookup failed (${res.status})`);
     }
-    loadNotedWords();
-    return () => {
-      cancelled = true;
-    };
-  }, [text.id]);
+    const data: LookupData = await res.json();
+    lookupCacheRef.current.set(word.toLowerCase(), data);
+    lookupCacheRef.current.set(data.lemma.toLowerCase(), data);
+    return data;
+  }
+
+  function clearPhraseSelection() {
+    activePhraseRef.current = null;
+    setSelectedPhrase(null);
+    setPhraseData(null);
+    setPhraseError(null);
+    setSubWords([]);
+  }
 
   async function handleWordClick(word: string) {
+    clearPhraseSelection();
     activeWordRef.current = word;
     setSelectedWord(word);
     setError(null);
-    setNote("");
-    setNoteId(null);
-    setNoteSaved(false);
     setAddedVocab(false);
 
     const cached = lookupCacheRef.current.get(word.toLowerCase());
@@ -111,29 +127,14 @@ export default function ReaderView({
       const supabase = createClient();
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        const [{ data: existing }, { data: existingHighlight }] = await Promise.all([
-          supabase
-            .from("vocab_items")
-            .select("word")
-            .eq("profile_id", userData.user.id)
-            .eq("word", data.lemma.toLowerCase())
-            .maybeSingle(),
-          supabase
-            .from("highlights")
-            .select("id, note")
-            .eq("text_id", text.id)
-            .eq("profile_id", userData.user.id)
-            .eq("selected_text", word)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle(),
-        ]);
+        const { data: existing } = await supabase
+          .from("vocab_items")
+          .select("word")
+          .eq("profile_id", userData.user.id)
+          .eq("word", data.lemma.toLowerCase())
+          .maybeSingle();
         if (activeWordRef.current !== word) return;
         if (existing) setAddedVocab(true);
-        if (existingHighlight) {
-          setNoteId(existingHighlight.id);
-          setNote(existingHighlight.note ?? "");
-        }
       }
     } catch (err) {
       if (activeWordRef.current === word) {
@@ -144,90 +145,123 @@ export default function ReaderView({
     }
   }
 
-  async function handleSaveNote() {
-    if (!selectedWord) return;
-    setSavingNote(true);
-    setNoteSaved(false);
-    try {
-      const supabase = createClient();
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error("Not signed in");
+  function updateSubWord(index: number, patch: Partial<SubWord>) {
+    setSubWords((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
+  }
 
-      if (noteId) {
-        const { error: updateError } = await supabase
-          .from("highlights")
-          .update({ note })
-          .eq("id", noteId);
-        if (updateError) throw new Error(updateError.message);
-      } else {
-        const { data: inserted, error: insertError } = await supabase
-          .from("highlights")
-          .insert({
-            text_id: text.id,
-            profile_id: userData.user.id,
-            start_offset: 0,
-            end_offset: 0,
-            selected_text: selectedWord,
-            note,
-          })
-          .select("id")
-          .single();
-        if (insertError) throw new Error(insertError.message);
-        setNoteId(inserted.id);
-      }
-      setNoteSaved(true);
-      setNotedWords((prev) => {
-        const next = new Set(prev);
-        if (note.trim()) next.add(selectedWord);
-        else next.delete(selectedWord);
-        return next;
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save note");
-    } finally {
-      setSavingNote(false);
+  async function handlePhraseClick(key: string, matchedText: string, words: string[]) {
+    activeWordRef.current = null;
+    setSelectedWord(null);
+    setLookupData(null);
+    setLoading(false);
+    setError(null);
+
+    activePhraseRef.current = key;
+    setSelectedPhrase({ key, matchedText, words });
+    setPhraseData(null);
+    setPhraseError(null);
+    setPhraseLoading(true);
+    setPhraseAddedVocab(false);
+    setSubWords(
+      words.map((word) => ({ word, loading: true, error: null, data: null, adding: false, added: false })),
+    );
+
+    const supabase = createClient();
+    const userIdPromise = supabase.auth.getUser().then(({ data }) => data.user?.id ?? null);
+    async function isSaved(lemma: string) {
+      const userId = await userIdPromise;
+      if (!userId) return false;
+      const { data } = await supabase
+        .from("vocab_items")
+        .select("word")
+        .eq("profile_id", userId)
+        .eq("word", lemma.toLowerCase())
+        .maybeSingle();
+      return !!data;
     }
+
+    const phraseTask = (async () => {
+      try {
+        const data = await fetchLookup(matchedText);
+        if (activePhraseRef.current !== key) return;
+        setPhraseData(data);
+        setPhraseLoading(false);
+        if ((await isSaved(data.lemma)) && activePhraseRef.current === key) {
+          setPhraseAddedVocab(true);
+        }
+      } catch (err) {
+        if (activePhraseRef.current === key) {
+          setPhraseError(err instanceof Error ? err.message : "Lookup failed");
+        }
+      } finally {
+        if (activePhraseRef.current === key) setPhraseLoading(false);
+      }
+    })();
+
+    const subWordTasks = words.map(async (word, index) => {
+      try {
+        const data = await fetchLookup(word);
+        if (activePhraseRef.current !== key) return;
+        updateSubWord(index, { data, loading: false });
+        if ((await isSaved(data.lemma)) && activePhraseRef.current === key) {
+          updateSubWord(index, { added: true });
+        }
+      } catch (err) {
+        if (activePhraseRef.current === key) {
+          updateSubWord(index, {
+            error: err instanceof Error ? err.message : "Lookup failed",
+            loading: false,
+          });
+        }
+      }
+    });
+
+    await Promise.all([phraseTask, ...subWordTasks]);
+  }
+
+  async function saveVocab(data: LookupData) {
+    const supabase = createClient();
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error("Not signed in");
+
+    const lemma = data.lemma.toLowerCase();
+
+    // vocab_items.word has a foreign key into dictionary_cache.word, which
+    // is keyed by whatever form was actually looked up — not necessarily
+    // the lemma (e.g. "läser" is cached, but "läsa" might not be yet).
+    // Look the lemma up too so the cache row exists before inserting.
+    const lookupRes = await fetch("/api/lookup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ word: lemma }),
+    });
+    if (!lookupRes.ok) {
+      const body = await lookupRes.json().catch(() => ({}));
+      throw new Error(body.error ?? "Failed to cache dictionary entry for this word");
+    }
+
+    const { error: upsertError } = await supabase.from("vocab_items").upsert(
+      {
+        profile_id: userData.user.id,
+        word: lemma,
+        source_text_id: text.id,
+        srs_state: DEFAULT_SRS_STATE,
+        due_at: new Date().toISOString(),
+      },
+      { onConflict: "profile_id,word", ignoreDuplicates: true },
+    );
+    if (upsertError) throw new Error(upsertError.message);
+    // Added via the browser Supabase client — Next has no way to know,
+    // so the Vocab page would otherwise show stale data until a hard reload.
+    router.refresh();
   }
 
   async function handleAddVocab() {
     if (!lookupData) return;
     setAddingVocab(true);
     try {
-      const supabase = createClient();
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error("Not signed in");
-
-      const lemma = lookupData.lemma.toLowerCase();
-
-      // vocab_items.word has a foreign key into dictionary_cache.word, which
-      // is keyed by whatever form was actually looked up — not necessarily
-      // the lemma (e.g. "läser" is cached, but "läsa" might not be yet).
-      // Look the lemma up too so the cache row exists before inserting.
-      const lookupRes = await fetch("/api/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ word: lemma }),
-      });
-      if (!lookupRes.ok) {
-        const body = await lookupRes.json().catch(() => ({}));
-        throw new Error(body.error ?? "Failed to cache dictionary entry for this word");
-      }
-
-      const { error: upsertError } = await supabase.from("vocab_items").upsert(
-        {
-          profile_id: userData.user.id,
-          word: lemma,
-          source_text_id: text.id,
-          srs_state: DEFAULT_SRS_STATE,
-          due_at: new Date().toISOString(),
-        },
-        { onConflict: "profile_id,word", ignoreDuplicates: true },
-      );
-      if (upsertError) throw new Error(upsertError.message);
+      await saveVocab(lookupData);
       setAddedVocab(true);
-      // Added via the browser Supabase client — Next has no way to know,
-      // so the Vocab page would otherwise show stale data until a hard reload.
-      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add to vocab");
     } finally {
@@ -235,37 +269,149 @@ export default function ReaderView({
     }
   }
 
-  function handleNoteChange(value: string) {
-    setNote(value);
-    setNoteSaved(false);
+  async function handleAddPhraseVocab() {
+    if (!phraseData) return;
+    const key = activePhraseRef.current;
+    setPhraseAddingVocab(true);
+    try {
+      await saveVocab(phraseData);
+      if (activePhraseRef.current === key) setPhraseAddedVocab(true);
+    } catch (err) {
+      if (activePhraseRef.current === key) {
+        setPhraseError(err instanceof Error ? err.message : "Failed to add to vocab");
+      }
+    } finally {
+      setPhraseAddingVocab(false);
+    }
+  }
+
+  async function handleAddSubWordVocab(index: number) {
+    const data = subWords[index]?.data;
+    if (!data) return;
+    const key = activePhraseRef.current;
+    updateSubWord(index, { adding: true });
+    try {
+      await saveVocab(data);
+      if (activePhraseRef.current === key) updateSubWord(index, { added: true });
+    } catch (err) {
+      if (activePhraseRef.current === key) {
+        updateSubWord(index, {
+          error: err instanceof Error ? err.message : "Failed to add to vocab",
+        });
+      }
+    } finally {
+      if (activePhraseRef.current === key) updateSubWord(index, { adding: false });
+    }
   }
 
   function closePanel() {
+    activeWordRef.current = null;
     setSelectedWord(null);
     setLookupData(null);
     setError(null);
+    clearPhraseSelection();
   }
 
-  function renderTokens(list: ReturnType<typeof tokenize>) {
-    return list.map((token, i) =>
-      token.isWord ? (
+  function renderTokens(list: ReturnType<typeof tokenize>, keyPrefix: string) {
+    return buildRenderUnits(list).map((unit) => {
+      if (unit.kind === "token") {
+        const token = list[unit.index];
+        return token.isWord ? (
+          <span
+            key={unit.index}
+            onClick={() => handleWordClick(token.text)}
+            className={`cursor-pointer rounded px-0.5 hover:bg-accent/15 ${
+              selectedWord === token.text ? "bg-accent/30" : ""
+            }`}
+          >
+            {token.text}
+          </span>
+        ) : (
+          <span key={unit.index}>{token.text}</span>
+        );
+      }
+
+      const phraseKey = `${keyPrefix}-${unit.startIndex}`;
+      const members = list.slice(unit.startIndex, unit.endIndex + 1);
+      const selected = selectedPhrase?.key === phraseKey;
+      return (
         <span
-          key={i}
-          onClick={() => handleWordClick(token.text)}
-          className={`cursor-pointer rounded px-0.5 hover:bg-accent/15 ${
-            selectedWord === token.text ? "bg-accent/30" : ""
-          } ${
-            notedWords.has(token.text)
-              ? "underline decoration-accent decoration-2 underline-offset-2"
-              : ""
-          }`}
+          key={unit.startIndex}
+          className="group cursor-pointer rounded px-0.5"
+          onClick={() =>
+            handlePhraseClick(
+              phraseKey,
+              unit.matchedText,
+              members.filter((t) => t.isWord).map((t) => t.text),
+            )
+          }
         >
-          {token.text}
+          {members.map((token, j) =>
+            token.isWord ? (
+              <span
+                key={j}
+                className={`rounded group-hover:bg-accent/15 ${selected ? "bg-accent/30" : ""}`}
+              >
+                {token.text}
+              </span>
+            ) : (
+              <span key={j}>{token.text}</span>
+            ),
+          )}
         </span>
-      ) : (
-        <span key={i}>{token.text}</span>
-      ),
-    );
+      );
+    });
+  }
+
+  function renderPanel() {
+    if (selectedPhrase) {
+      return (
+        <>
+          <LookupPanelContent
+            word={selectedPhrase.matchedText}
+            loading={phraseLoading}
+            error={phraseError}
+            data={phraseData}
+            onAddVocab={handleAddPhraseVocab}
+            addingVocab={phraseAddingVocab}
+            addedVocab={phraseAddedVocab}
+          />
+          <div className="mt-3 border-t border-hairline pt-3">
+            <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
+              Individual words
+            </p>
+            <div className="flex flex-col gap-4">
+              {subWords.map((sub, index) => (
+                <LookupPanelContent
+                  key={index}
+                  word={sub.word}
+                  loading={sub.loading}
+                  error={sub.error}
+                  data={sub.data}
+                  onAddVocab={() => handleAddSubWordVocab(index)}
+                  addingVocab={sub.adding}
+                  addedVocab={sub.added}
+                />
+              ))}
+            </div>
+          </div>
+        </>
+      );
+    }
+    if (selectedWord) {
+      return (
+        <LookupPanelContent
+          word={selectedWord}
+          loading={loading}
+          error={error}
+          data={lookupData}
+          onAddVocab={handleAddVocab}
+          addingVocab={addingVocab}
+          addedVocab={addedVocab}
+        />
+      );
+    }
+    return <p className="text-sm text-muted-foreground">Click a word to look it up.</p>;
   }
 
   return (
@@ -274,42 +420,25 @@ export default function ReaderView({
         <div className="mx-auto max-w-2xl">
         <div className="mb-6 flex items-start justify-between gap-3">
           <h1 className="font-serif text-2xl font-semibold">
-            {renderTokens(tokenize(text.title))}
+            {renderTokens(tokenize(text.title), "title")}
           </h1>
           <Button variant="outline" size="sm" onClick={handleCopy} className="shrink-0">
             {copied ? "Copied!" : "Copy text"}
           </Button>
         </div>
         <p className="font-serif text-lg leading-8 whitespace-pre-wrap">
-          {renderTokens(tokens)}
+          {renderTokens(tokens, "body")}
         </p>
         </div>
       </main>
 
       {/* Desktop: persistent side panel */}
       <aside className="hidden w-80 shrink-0 overflow-y-auto border-l border-hairline bg-surface p-5 md:block">
-        {selectedWord ? (
-          <LookupPanelContent
-            word={selectedWord}
-            loading={loading}
-            error={error}
-            data={lookupData}
-            note={note}
-            onNoteChange={handleNoteChange}
-            onSaveNote={handleSaveNote}
-            savingNote={savingNote}
-            noteSaved={noteSaved}
-            onAddVocab={handleAddVocab}
-            addingVocab={addingVocab}
-            addedVocab={addedVocab}
-          />
-        ) : (
-          <p className="text-sm text-muted-foreground">Click a word to look it up.</p>
-        )}
+        {renderPanel()}
       </aside>
 
       {/* Mobile: bottom sheet */}
-      {selectedWord && (
+      {(selectedWord || selectedPhrase) && (
         <>
           <div
             className="fixed inset-0 z-40 bg-foreground/20 md:hidden"
@@ -319,20 +448,7 @@ export default function ReaderView({
             <div className="mb-2 flex justify-center">
               <div className="h-1 w-8 rounded-full bg-hairline" />
             </div>
-            <LookupPanelContent
-              word={selectedWord}
-              loading={loading}
-              error={error}
-              data={lookupData}
-              note={note}
-              onNoteChange={handleNoteChange}
-              onSaveNote={handleSaveNote}
-              savingNote={savingNote}
-              noteSaved={noteSaved}
-              onAddVocab={handleAddVocab}
-              addingVocab={addingVocab}
-              addedVocab={addedVocab}
-            />
+            {renderPanel()}
           </div>
         </>
       )}

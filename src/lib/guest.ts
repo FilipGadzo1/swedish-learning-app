@@ -28,7 +28,6 @@ export type GuestVocabItem = {
 };
 
 const TEXTS_KEY = "guest:texts";
-const NOTES_KEY = "guest:notes"; // { [textId]: { [word]: string } }
 const VOCAB_KEY = "guest:vocab";
 const LESSON_PROGRESS_KEY = "guest:lessonProgress"; // { [slug]: "read" }
 
@@ -63,7 +62,6 @@ export function exitGuestMode() {
   }
   if (typeof window !== "undefined") {
     window.localStorage.removeItem(TEXTS_KEY);
-    window.localStorage.removeItem(NOTES_KEY);
     window.localStorage.removeItem(VOCAB_KEY);
     window.localStorage.removeItem(LESSON_PROGRESS_KEY);
   }
@@ -92,24 +90,6 @@ export function addGuestText(text: Omit<GuestText, "id" | "created_at">): GuestT
   };
   writeJson(TEXTS_KEY, [...listGuestTexts(), full]);
   return full;
-}
-
-export function getGuestNote(textId: string, word: string): string {
-  const all = readJson<Record<string, Record<string, string>>>(NOTES_KEY, {});
-  return all[textId]?.[word] ?? "";
-}
-
-export function getGuestNotedWords(textId: string): Set<string> {
-  const all = readJson<Record<string, Record<string, string>>>(NOTES_KEY, {});
-  return new Set(Object.keys(all[textId] ?? {}).filter((w) => all[textId][w].trim()));
-}
-
-export function setGuestNote(textId: string, word: string, note: string) {
-  const all = readJson<Record<string, Record<string, string>>>(NOTES_KEY, {});
-  const forText = { ...(all[textId] ?? {}) };
-  if (note.trim()) forText[word] = note;
-  else delete forText[word];
-  writeJson(NOTES_KEY, { ...all, [textId]: forText });
 }
 
 export function listGuestVocab(): GuestVocabItem[] {

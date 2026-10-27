@@ -55,6 +55,19 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           shown right in the grammar panel — get used to reading it every time, even
           for words you think you already know.
         </p>
+        <p>
+          <strong>Compound nouns</strong> take the gender of their <em>last</em>{" "}
+          component, regardless of what the earlier parts are. This is a genuinely
+          reliable rule, unlike guessing gender from scratch: <em>ett brev</em>{" "}
+          (a letter) + <em>en låda</em> (a box) → <em>en brevlåda</em> (a mailbox) is
+          an en-word because <em>låda</em>, the last part, is an en-word.
+        </p>
+        <ExampleTable
+          rows={[
+            ["ett bord + en lampa → en bordslampa", "a table + a lamp → a table lamp (en, from lampa)"],
+            ["en sol + ett sken → ett solsken", "a sun + a glow → sunshine (ett, from sken)"],
+          ]}
+        />
       </>
     ),
   },
@@ -87,6 +100,21 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           (indefinite)&rdquo; and a &ldquo;singular (definite)&rdquo; form — they&rsquo;re genuinely
           different words you need to recognize, not a typo.
         </p>
+        <p>
+          There&rsquo;s a second way to say &ldquo;the&rdquo; that shows up as soon as an{" "}
+          <strong>adjective</strong> comes before the noun: you still add the suffix,
+          but you also add a free-standing word in front — <em>den</em> for en-words,{" "}
+          <em>det</em> for ett-words, <em>de</em> for all plurals. English speakers
+          often drop this &ldquo;double definiteness&rdquo; out of habit, but Swedish keeps
+          both pieces:
+        </p>
+        <ExampleTable
+          rows={[
+            ["den stora bilen", "the big car (not stora bilen)"],
+            ["det gamla huset", "the old house"],
+            ["de röda äpplena", "the red apples"],
+          ]}
+        />
       </>
     ),
   },
@@ -117,6 +145,22 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           reader&rsquo;s noun grammar table, alongside singular indefinite, singular
           definite, and plural indefinite.
         </p>
+        <p>
+          That&rsquo;s the fifth pattern promised above — <strong>-er</strong>, mostly on
+          nouns borrowed from Latin/Greek. Beyond these five patterns, a small set
+          of very common nouns are outright irregular on top of that, with a vowel
+          change instead of (or alongside) an ending — these just have to be
+          memorized individually, the same way English &ldquo;man → men&rdquo; and &ldquo;foot →
+          feet&rdquo; do:
+        </p>
+        <ExampleTable
+          rows={[
+            ["ett museum → museer", "a museum → museums (-er)"],
+            ["en man → män", "a man → men (vowel change, no ending)"],
+            ["en bror → bröder", "a brother → brothers (vowel change + -er)"],
+            ["en bok → böcker", "a book → books (vowel change + -er)"],
+          ]}
+        />
       </>
     ),
   },
@@ -146,6 +190,20 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
             ["Vi är trötta.", "We are tired."],
           ]}
         />
+        <p>
+          <strong>Modal verbs</strong> — <em>kan</em> (can), <em>vill</em> (want to),{" "}
+          <em>måste</em> (must), <em>ska</em> (will/going to), <em>får</em> (may/is
+          allowed to) — follow the same one-form rule and pair directly with a
+          second verb&rsquo;s infinitive, no &ldquo;to&rdquo; needed: <em>Jag vill läsa</em> (I
+          want to read), <em>Hon kan simma</em> (She can swim).
+        </p>
+        <p>
+          One form worth separating from present tense even though it looks
+          similar: the <strong>imperative</strong> (a command) is usually just the
+          verb&rsquo;s bare stem, not the present-tense form — <em>Läs!</em> (Read!), not{" "}
+          <em>Läser!</em>. For -ar verbs the stem and the infinitive are the same:{" "}
+          <em>Tala!</em> (Speak!).
+        </p>
       </>
     ),
   },
@@ -182,6 +240,14 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           forms (infinitive, present, past, supine) together — you need past and
           supine side by side to use them correctly.
         </p>
+        <p>
+          There&rsquo;s a third past form for when you need to talk about &ldquo;a past
+          before a past&rdquo; — the <strong>pluperfect</strong>, formed with{" "}
+          <em>hade</em> (had) instead of <em>har</em>, plus the same supine:{" "}
+          <em>Jag hade redan läst boken när filmen kom ut</em> (I had already read
+          the book when the movie came out). It works exactly like English &ldquo;had +
+          past participle,&rdquo; just with the supine standing in for the participle.
+        </p>
       </>
     ),
   },
@@ -212,6 +278,15 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           This &ldquo;inversion&rdquo; is the single most common structural mistake English
           speakers make in Swedish — forgetting to flip the subject and verb after a
           fronted word. It&rsquo;s worth drilling on purpose.
+        </p>
+        <p>
+          Questions use the same inversion instinct, just starting from the verb
+          itself. A yes/no question puts the verb first, before the subject:{" "}
+          <em>Äter du äpplet?</em> (Are you eating the apple?). A question starting
+          with a question word (<em>vad, var, vem</em>...) puts that word first,
+          then still inverts verb and subject right after it — see the &ldquo;asking
+          questions&rdquo; lesson for the full set of question words and how they
+          combine with this pattern.
         </p>
       </>
     ),
@@ -246,6 +321,20 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           interesting&rdquo; — though many common adjectives have their own short forms
           instead, like <em>stor → större → störst</em> (big → bigger → biggest).
         </p>
+        <p>
+          A handful of very common adjectives are irregular enough to just
+          memorize outright, the way English &ldquo;good → better → best&rdquo; is. The most
+          important one is <em>liten</em> (small), which changes almost
+          unrecognizably depending on gender, number, and definiteness:
+        </p>
+        <ExampleTable
+          rows={[
+            ["en liten bil", "a small car (en-word)"],
+            ["ett litet hus", "a small house (ett-word)"],
+            ["lilla bilen / lilla huset", "the small car / house (definite singular)"],
+            ["små bilar / hus", "small cars / houses (plural, any gender)"],
+          ]}
+        />
       </>
     ),
   },
@@ -282,6 +371,16 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           Swedish has no separate word for &ldquo;a&rdquo;/&ldquo;an&rdquo; — that information is
           baked into whether a noun is an <em>en</em>-word or an <em>ett</em>-word,
           which is why gender shows up so early and so often in this app.
+        </p>
+        <p>
+          Two more classes round out the picture, both small closed sets rather
+          than something you&rsquo;ll keep adding to:{" "}
+          <strong>interjektion</strong> (interjection) covers exclamations like{" "}
+          <em>oj!</em> (oops!), <em>usch!</em> (ugh!), and <em>aj!</em> (ouch!); and{" "}
+          <strong>artikel</strong> (article) is sometimes used as a separate label
+          for the free-standing <em>den/det/de</em> that shows up before an
+          adjective + definite noun (see the definite-forms lesson) — some
+          grammars count it as its own class, others fold it into pronouns.
         </p>
       </>
     ),
@@ -326,6 +425,16 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           (they wash themselves) — never <em>henne</em> or <em>dem</em> here, since
           the subject and object are the same person.
         </p>
+        <p>
+          Two more useful sets round out pronouns. <strong>Demonstratives</strong> —
+          &ldquo;this/these&rdquo; and &ldquo;that/those&rdquo; — add <em>här</em> (here) or{" "}
+          <em>där</em> (there) after the gendered article: <em>den här bilen</em>{" "}
+          (this car), <em>det där huset</em> (that house), <em>de här böckerna</em>{" "}
+          (these books). <strong>Indefinite pronouns</strong> follow the same
+          en/ett/plural three-way split you&rsquo;ve already seen for possessives:{" "}
+          <em>någon/något/några</em> (some/any), <em>ingen/inget/inga</em>{" "}
+          (no/none).
+        </p>
       </>
     ),
   },
@@ -363,6 +472,15 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           instead: <em>...eftersom jag inte förstår</em> (...because I don&rsquo;t
           understand) — see the connecting-words lesson for why clause type changes
           the word order.
+        </p>
+        <p>
+          Adverbs compare the same way adjectives do, usually with <em>mer</em>/
+          <em>mest</em> but sometimes with a short form:{" "}
+          <em>snabbt → snabbare → snabbast</em> (fast → faster → fastest). And
+          placement for time/place adverbs is more flexible than for{" "}
+          <em>inte</em> — they typically go at the very start or the very end of
+          the clause rather than glued to the verb: <em>Igår regnade det</em> /{" "}
+          <em>Det regnade igår</em> (It rained yesterday), both fine.
         </p>
       </>
     ),
@@ -422,6 +540,14 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           introduced by the connecting word that the subject-before-verb order is
           fixed and inversion is switched off.
         </p>
+        <p>
+          A few more conjunctions are worth having ready: <em>så att</em> (so
+          that — subordinating, triggers the fixed word order above),{" "}
+          <em>antingen...eller</em> (either...or), and <em>varken...eller</em>{" "}
+          (neither...nor) — both of the last two are coordinating and come as a
+          matched pair: <em>Jag vill varken äta eller dricka</em> (I want neither
+          to eat nor to drink).
+        </p>
       </>
     ),
   },
@@ -462,13 +588,21 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           the &ldquo;proper&rdquo; form, that&rsquo;s what to learn first — slang is easier to
           pick up by ear once the underlying word is already familiar.
         </p>
+        <ExampleTable
+          rows={[
+            ["keff", "lame, low-quality: en keff present = a lame gift"],
+            ["grymt bra / asgrymt", "really great — \"as-\" is a casual intensifier prefix, like \"super-\""],
+            ["pucko / dumskalle", "idiot, dummy — mild, joking insults between friends"],
+            ["sjukt", "literally \"sick/ill\" — slang intensifier: sjukt kul = insanely fun"],
+          ]}
+        />
       </>
     ),
   },
   {
     slug: "idioms-and-phrases",
     title: "Idioms and popular phrases",
-    summary: "Fixed expressions that don't translate word-for-word — including Swedish's own \"cat got your tongue.\"",
+    summary: "Fixed expressions that don't translate word-for-word.",
     body: (
       <>
         <p>
@@ -478,7 +612,7 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
         </p>
         <ExampleTable
           rows={[
-            ["Har du tappat tungan?", "\"Cat got your tongue?\" (literally: \"Did you lose your tongue?\")"],
+            ["Har du tappat tungan?", "Did you lose your tongue? — a joking way to ask why someone's gone quiet."],
             ["Ingen ko på isen.", "No rush, no worries. (literally: \"No cow on the ice.\")"],
             ["Det ligger en hund begraven här.", "Something fishy is going on. (literally: \"There's a dog buried here.\")"],
             ["Köpa grisen i säcken.", "To buy a pig in a poke — buy something sight unseen."],
@@ -486,6 +620,8 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
             ["Glad som en lärka.", "Happy as a lark."],
             ["Smaken är som baken — delad.", "Tastes differ. (literally: \"Taste is like the backside — divided,\" a pun since \"delad bak\" also means a cleft behind)"],
             ["Det var som attan!", "Well, I'll be darned! (mild exclamation of surprise)"],
+            ["Att kasta pengarna i sjön.", "To throw money away. (literally: \"to throw the money in the lake\")"],
+            ["Nu är det kokta fläsket stekt.", "Now things have gone badly wrong. (literally: \"now the boiled pork is fried\" — pork that's already boiled and then fried is ruined)"],
           ]}
         />
         <p>
@@ -524,6 +660,10 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
             ["sätta igång", "to get going, to start"],
             ["lägga till", "to add"],
             ["ta på / ta av", "to put on / to take off (clothes)"],
+            ["lägga ner", "to shut down / give up on (ett företag lägger ner = a company shuts down)"],
+            ["skriva ner", "to write down"],
+            ["hoppa över", "to skip (a meal, a step, a chapter)"],
+            ["ringa upp", "to call back / phone someone up"],
           ]}
         />
         <p>
@@ -554,6 +694,200 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
           partikelverb conjugate exactly like their base verb does (<em>ta</em>{" "}
           → <em>tar</em> → <em>tog</em> → <em>tagit</em>), with the particle simply
           riding along unchanged.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "wh-questions",
+    title: "Asking questions: vad, vem, var, när",
+    summary: "Swedish question words, and the word order that comes with them.",
+    body: (
+      <>
+        <p>
+          Swedish question words work much like English &ldquo;wh-&rdquo; words, and most of
+          them are a single, memorable syllable:
+        </p>
+        <ExampleTable
+          rows={[
+            ["vad", "what"],
+            ["vem / vilka", "who (singular) / who (plural)"],
+            ["vilken / vilket / vilka", "which (en-word / ett-word / plural)"],
+            ["var", "where"],
+            ["vart", "where to (motion toward a place, not just location)"],
+            ["när", "when"],
+            ["varför", "why"],
+            ["hur", "how"],
+            ["hur mycket / hur många", "how much / how many (countable vs. uncountable)"],
+          ]}
+        />
+        <p>
+          The question word always leads the sentence, and just like a fronted
+          time or place expression in a statement (see the word-order lesson), the
+          verb comes immediately after it, before the subject:
+        </p>
+        <ExampleTable
+          rows={[
+            ["Vad heter du?", "What is your name? (literally: What are you called?)"],
+            ["Var bor du?", "Where do you live?"],
+            ["Vart ska du?", "Where are you going?"],
+            ["När kommer bussen?", "When is the bus coming?"],
+            ["Varför gråter hon?", "Why is she crying?"],
+            ["Hur mår du?", "How are you? (literally: How do you feel?)"],
+          ]}
+        />
+        <p>
+          <strong>Var</strong> vs. <strong>vart</strong> trips up a lot of
+          learners: <em>var</em> asks about a static location (&ldquo;where are you&rdquo;),
+          while <em>vart</em> asks about a destination, used with verbs of motion
+          (&ldquo;where are you going&rdquo;). English collapses both into &ldquo;where,&rdquo; so this
+          distinction has to be learned on purpose.
+        </p>
+        <p>
+          <strong>Vilken/vilket/vilka</strong> agree with the noun they ask about
+          the same way adjectives and demonstratives do — en-word, ett-word, or
+          plural: <em>Vilken bil?</em> (Which car?), <em>Vilket hus?</em> (Which
+          house?), <em>Vilka böcker?</em> (Which books?).
+        </p>
+        <p>
+          For a yes/no question with no question word at all, the verb simply
+          moves to the very front, ahead of the subject: <em>Kommer du imorgon?</em>{" "}
+          (Are you coming tomorrow?) — there&rsquo;s no equivalent of English &ldquo;do&rdquo; as
+          a helper word; the main verb itself does the inverting.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "numbers",
+    title: "Numbers: ett, två, tre",
+    summary: "Cardinal and ordinal numbers — and why \"one\" is the same word as the gender article.",
+    body: (
+      <>
+        <p>
+          Swedish numbers are mostly straightforward to learn by rote, but one
+          is already familiar: <strong>ett</strong> (one) is the exact same word
+          as the <em>ett</em>-word article you already know from the gender
+          lesson, and <strong>en</strong> (one) is the same as the <em>en</em>-word
+          article. When you count a noun, the word for &ldquo;one&rdquo; still has to
+          agree with that noun&rsquo;s gender: <em>en bil</em> (one/a car),{" "}
+          <em>ett hus</em> (one/a house) — not a coincidence, it&rsquo;s literally
+          the same grammatical agreement at work.
+        </p>
+        <ExampleTable
+          rows={[
+            ["noll, en/ett, två, tre, fyra, fem", "0, 1, 2, 3, 4, 5"],
+            ["sex, sju, åtta, nio, tio", "6, 7, 8, 9, 10"],
+            ["elva, tolv, tretton, fjorton, femton", "11, 12, 13, 14, 15"],
+            ["sexton, sjutton, arton, nitton, tjugo", "16, 17, 18, 19, 20"],
+          ]}
+        />
+        <p>
+          From 21 onward, Swedish just glues the pieces together as one word,
+          with no &ldquo;and&rdquo; the way some languages use: <em>tjugoett</em>{" "}
+          (twenty-one), <em>tjugotvå</em> (twenty-two). The tens follow a
+          regular <strong>-tio</strong> pattern from 30 up:
+        </p>
+        <ExampleTable
+          rows={[
+            ["trettio, fyrtio, femtio", "30, 40, 50"],
+            ["sextio, sjuttio, åttio, nittio", "60, 70, 80, 90"],
+            ["hundra, tvåhundra", "100, 200"],
+            ["tusen, tvåtusen", "1,000, 2,000"],
+          ]}
+        />
+        <p>
+          <strong>Ordinal numbers</strong> (first, second, third...) are a
+          separate set of words, not just &ldquo;number + -th&rdquo; the way English
+          mostly works, and the first few are irregular:
+        </p>
+        <ExampleTable
+          rows={[
+            ["första, andra, tredje", "1st, 2nd, 3rd"],
+            ["fjärde, femte, sjätte", "4th, 5th, 6th"],
+            ["sjunde, åttonde, nionde, tionde", "7th, 8th, 9th, 10th"],
+          ]}
+        />
+        <p>
+          From 11th onward it regularizes to <strong>-de</strong> or{" "}
+          <strong>-e</strong> tacked onto the cardinal number (
+          <em>elfte</em>, <em>tolfte</em>, <em>tjugonde</em>), which is also the
+          form used for dates — see the next lesson.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "time-dates-seasons",
+    title: "Days, dates, and seasons",
+    summary: "Veckodagar, månader, and årstider — the vocabulary that anchors a text in time.",
+    body: (
+      <>
+        <p>
+          Days of the week (<strong>veckodagar</strong>) all end in{" "}
+          <strong>-dag</strong>, and the week starts on Monday, not Sunday:
+        </p>
+        <ExampleTable
+          rows={[
+            ["måndag, tisdag, onsdag", "Monday, Tuesday, Wednesday"],
+            ["torsdag, fredag", "Thursday, Friday"],
+            ["lördag, söndag", "Saturday, Sunday"],
+          ]}
+        />
+        <p>
+          Months (<strong>månader</strong>) are close enough to English/Latin
+          roots that they&rsquo;re mostly recognizable on sight, and — like all
+          Swedish nouns that aren&rsquo;t proper names of people or places — they&rsquo;re
+          written lowercase, not capitalized the way English does:
+        </p>
+        <ExampleTable
+          rows={[
+            ["januari, februari, mars, april", "January, February, March, April"],
+            ["maj, juni, juli, augusti", "May, June, July, August"],
+            ["september, oktober, november, december", "September, October, November, December"],
+          ]}
+        />
+        <p>
+          A <strong>date</strong> uses the ordinal number from the numbers
+          lesson plus the month: <em>den femte maj</em> (the fifth of May,
+          literally &ldquo;the fifth May&rdquo;). <em>Den</em> here works the same
+          free-standing-article role you saw in the definite-forms lesson.
+        </p>
+        <ExampleTable
+          rows={[
+            ["Vilket datum är det idag?", "What's the date today?"],
+            ["Det är den femte maj.", "It's the fifth of May."],
+            ["Jag föddes den tjugoförsta mars.", "I was born on the 21st of March."],
+          ]}
+        />
+        <p>
+          The four seasons (<strong>årstider</strong>) are all common everyday
+          words, worth knowing early since they show up constantly in weather
+          talk and generated texts about daily life:
+        </p>
+        <ExampleTable
+          rows={[
+            ["vår", "spring"],
+            ["sommar", "summer"],
+            ["höst", "autumn/fall"],
+            ["vinter", "winter"],
+          ]}
+        />
+        <p>
+          To say &ldquo;in&rdquo; a season, Swedish uses <strong>på</strong> plus the
+          season&rsquo;s definite form, and this works for all four — it&rsquo;s the safe,
+          always-correct default: <em>på våren</em> (in spring), <em>på sommaren</em>{" "}
+          (in summer), <em>på hösten</em> (in autumn), <em>på vintern</em> (in
+          winter). Swedish keeps the definite form here even though English
+          drops &ldquo;the&rdquo; in casual speech (&ldquo;in summer,&rdquo; not &ldquo;in the summer&rdquo;).
+        </p>
+        <p>
+          You&rsquo;ll also hear <strong>om</strong> plus the definite form, most often
+          with <em>sommaren</em> and <em>vintern</em>: <em>om sommaren</em>,{" "}
+          <em>om vintern</em>. This isn&rsquo;t a different season pairing — it&rsquo;s a
+          different nuance, leaning toward a habitual or recurring statement
+          (&ldquo;in winter(s), generally...&rdquo;) rather than one specific season.
+          When in doubt, <em>på</em> is never wrong.
         </p>
       </>
     ),

@@ -62,6 +62,14 @@ If partOfSpeech is "adjective", grammar must be:
 
 If partOfSpeech is "adverb" or "other", grammar must be {} (empty object).
 
+If the input is multiple space-separated words forming a Swedish phrasal verb
+(verb + particle, e.g. "tar bort", "kom ihåg"), treat the whole phrase as the
+lookup target: "lemma" is the infinitive phrase (e.g. "ta bort"), "partOfSpeech"
+is "verb", "englishMeanings" translate the phrase as a whole, and "grammar" gives
+the phrase's conjugated forms with the particle included each time, e.g.
+{ "infinitive": "ta bort", "present": "tar bort", "past": "tog bort",
+  "supine": "tagit bort", "imperative": "ta bort" }.
+
 Respond with raw JSON only — no markdown code fences, no explanation.`;
 
 export async function POST(req: NextRequest) {

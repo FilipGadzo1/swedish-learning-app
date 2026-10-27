@@ -10,7 +10,6 @@ import {
   DialogTrigger,
 } from "@tessera/ui";
 import AddTextForm from "./AddTextForm";
-import ImportPdfForm from "./ImportPdfForm";
 import GenerateTextForm from "./GenerateTextForm";
 
 export default function TextHero({ guest = false }: { guest?: boolean }) {
@@ -25,19 +24,6 @@ export default function TextHero({ guest = false }: { guest?: boolean }) {
       </section>
       <div className="flex flex-wrap items-center gap-x-1 text-sm text-muted-foreground">
         <span>Or bring your own:</span>
-        <Dialog>
-          <DialogTrigger render={<Button variant="link" color="neutral" size="sm" className="px-1" />}>
-            Upload a PDF
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Upload a PDF</DialogTitle>
-              <DialogDescription>Import the text of a PDF (up to 4MB) to read it here.</DialogDescription>
-            </DialogHeader>
-            <ImportPdfForm guest={guest} />
-          </DialogContent>
-        </Dialog>
-        <span aria-hidden>·</span>
         <Dialog>
           <DialogTrigger render={<Button variant="link" color="neutral" size="sm" className="px-1" />}>
             Paste your own text

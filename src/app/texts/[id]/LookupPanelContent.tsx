@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Field, FieldLabel, Textarea } from "@tessera/ui";
+import { Button } from "@tessera/ui";
 import ErrorMessage from "@/components/ErrorMessage";
 
 type LookupGrammar = Record<string, string>;
@@ -37,11 +37,6 @@ export default function LookupPanelContent({
   loading,
   error,
   data,
-  note,
-  onNoteChange,
-  onSaveNote,
-  savingNote,
-  noteSaved,
   onAddVocab,
   addingVocab,
   addedVocab,
@@ -50,11 +45,6 @@ export default function LookupPanelContent({
   loading: boolean;
   error: string | null;
   data: LookupData | null;
-  note?: string;
-  onNoteChange?: (value: string) => void;
-  onSaveNote?: () => void;
-  savingNote?: boolean;
-  noteSaved?: boolean;
   onAddVocab?: () => void;
   addingVocab?: boolean;
   addedVocab?: boolean;
@@ -101,20 +91,8 @@ export default function LookupPanelContent({
               disabled={addedVocab}
               className="self-start"
             >
-              {addedVocab ? "Added to vocab" : "+ Add to vocab"}
+              {addedVocab ? "Added to vocabulary" : "+ Add to vocabulary"}
             </Button>
-          )}
-
-          {onNoteChange && onSaveNote && (
-            <div className="mt-2 border-t border-hairline pt-3">
-              <Field>
-                <FieldLabel>Your note</FieldLabel>
-                <Textarea value={note ?? ""} onChange={(e) => onNoteChange(e.target.value)} rows={2} />
-              </Field>
-              <Button size="sm" onClick={onSaveNote} loading={savingNote} className="mt-2">
-                {noteSaved ? "Saved" : "Save note"}
-              </Button>
-            </div>
           )}
         </div>
       )}

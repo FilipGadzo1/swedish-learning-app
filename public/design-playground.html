@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Svenska — Design Playground</title>
+<style>
+  :root {
+    --ui-bg: #121418;
+    --ui-panel: #1a1d23;
+    --ui-border: #2a2e36;
+    --ui-text: #e4e6ea;
+    --ui-text-dim: #8a8f99;
+    --ui-accent: #d97757;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--ui-bg);
+    color: var(--ui-text);
+    display: flex;
+    min-height: 100vh;
+  }
+  #controls {
+    width: 340px;
+    flex-shrink: 0;
+    padding: 20px;
+    background: var(--ui-panel);
+    border-right: 1px solid var(--ui-border);
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  #preview-wrap {
+    flex: 1;
+    overflow: auto;
+    padding: 32px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  #prompt-wrap {
+    border-top: 1px solid var(--ui-border);
+    padding: 16px 24px;
+    background: var(--ui-panel);
+  }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  .sub { font-size: 12px; color: var(--ui-text-dim); margin: 0 0 20px; }
+  .group { margin-bottom: 22px; }
+  .group-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ui-text-dim);
+    margin-bottom: 10px;
+  }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+  .preset-btn {
+    font-size: 11.5px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--ui-border);
+    background: #20242c;
+    color: var(--ui-text);
+    cursor: pointer;
+  }
+  .preset-btn:hover { border-color: var(--ui-accent); }
+  .preset-btn.active { border-color: var(--ui-accent); background: #2a2016; }
+  label { display: block; font-size: 12.5px; margin: 10px 0 5px; color: var(--ui-text-dim); }
+  select, input[type=range] { width: 100%; }
+  select {
+    background: #20242c;
+    color: var(--ui-text);
+    border: 1px solid var(--ui-border);
+    border-radius: 5px;
+    padding: 6px 8px;
+    font-size: 12.5px;
+  }
+  .row { display: flex; gap: 8px; }
+  .row > div { flex: 1; }
+  .swatch-row { display: flex; gap: 6px; margin-top: 4px; }
+  .swatch {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid transparent; cursor: pointer;
+  }
+  .swatch.active { border-color: #fff; }
+  .toggle-row { display: flex; gap: 6px; }
+  .toggle-btn {
+    flex: 1; font-size: 12px; padding: 7px 4px; text-align: center;
+    border-radius: 6px; border: 1px solid var(--ui-border);
+    background: #20242c; color: var(--ui-text); cursor: pointer;
+  }
+  .toggle-btn.active { border-color: var(--ui-accent); background: #2a2016; }
+  .val { color: var(--ui-text); font-variant-numeric: tabular-nums; }
+
+  #prompt-text {
+    font-size: 12.5px; line-height: 1.6; color: var(--ui-text);
+    background: #0d0f12; border: 1px solid var(--ui-border); border-radius: 6px;
+    padding: 12px; max-height: 110px; overflow-y: auto; margin-bottom: 8px;
+  }
+  #copy-btn {
+    font-size: 12.5px; padding: 7px 14px; border-radius: 6px;
+    border: 1px solid var(--ui-accent); background: var(--ui-accent); color: #16110d;
+    cursor: pointer; font-weight: 600;
+  }
+  #copy-btn:hover { opacity: 0.9; }
+
+  /* ===== Preview app mock ===== */
+  #app {
+    width: 820px;
+    max-width: 100%;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    transition: all 0.25s ease;
+  }
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+  }
+  .nav-left { display: flex; align-items: center; gap: 18px; }
+  .brand { font-weight: 700; }
+  .nav-link { font-size: 13.5px; opacity: 0.75; }
+  .nav-link.current { opacity: 1; }
+  .nav-right { font-size: 12.5px; opacity: 0.6; }
+
+  .body-area { display: flex; }
+  .reader-col { flex: 1; padding: 28px 32px; }
+  .reader-title { font-size: 13px; opacity: 0.55; margin-bottom: 4px; }
+  .reader-text { font-size: 17px; }
+  .word {
+    cursor: pointer; border-radius: 3px; padding: 0 1px;
+    transition: background 0.15s;
+  }
+  .word.hl { font-weight: 600; }
+
+  .side-panel {
+    width: 230px; flex-shrink: 0; padding: 20px;
+  }
+  .lemma { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .pos { font-size: 11px; opacity: 0.55; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px; }
+  .meaning { font-size: 13px; margin-bottom: 14px; }
+  .grammar-row {
+    display: flex; justify-content: space-between; font-size: 12px;
+    padding: 5px 0; border-top: 1px solid rgba(128,128,128,0.2);
+  }
+  .grammar-row span:last-child { font-weight: 600; }
+
+  .vocab-strip {
+    display: flex; gap: 8px; padding: 14px 32px 20px; flex-wrap: wrap;
+  }
+  .vocab-chip {
+    font-size: 12px; padding: 5px 10px; border-radius: 20px;
+    display: flex; align-items: center; gap: 5px;
+  }
+</style>
+</head>
+<body>
+
+<div id="controls">
+  <h1>Svenska — Design Playground</h1>
+  <p class="sub">Explore a visual identity for the reading/vocab/grammar app, then copy a direction to hand to Claude.</p>
+
+  <div class="group">
+    <div class="group-title">Presets</div>
+    <div class="presets" id="presets"></div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Palette</div>
+    <label>Mood</label>
+    <div class="toggle-row" id="mood-toggle"></div>
+    <label>Accent color</label>
+    <div class="swatch-row" id="accent-swatches"></div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Typography</div>
+    <label>Reading text (body)</label>
+    <select id="font-body"></select>
+    <label>UI / navigation</label>
+    <select id="font-ui"></select>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Layout</div>
+    <label>Reading surface</label>
+    <div class="toggle-row" id="surface-toggle"></div>
+    <label>Corner roundness <span class="val" id="radius-val"></span></label>
+    <input type="range" id="radius" min="0" max="22" value="6">
+  </div>
+</div>
+
+<div id="main">
+  <div id="preview-wrap">
+    <div id="app">
+      <div class="nav">
+        <div class="nav-left">
+          <span class="brand">Svenska</span>
+          <span class="nav-link current">Texts</span>
+          <span class="nav-link">Vocab</span>
+          <span class="nav-link">Grammar</span>
+        </div>
+        <div class="nav-right">filip@example.com</div>
+      </div>
+      <div class="body-area">
+        <div class="reader-col">
+          <div class="reader-title">En vanlig morgon</div>
+          <p class="reader-text" id="reader-text"></p>
+          <div class="vocab-strip" id="vocab-strip"></div>
+        </div>
+        <div class="side-panel" id="side-panel"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="prompt-wrap">
+    <div id="prompt-text"></div>
+    <button id="copy-btn" onclick="copyPrompt()">Copy direction</button>
+  </div>
+</div>
+
+<script>
+const FONT_STACKS = {
+  "Fraunces (serif, warm display)": "'Fraunces', Georgia, serif",
+  "Source Serif 4 (serif, literary)": "'Source Serif 4', Georgia, serif",
+  "Lora (serif, gentle)": "'Lora', Georgia, serif",
+  "Spectral (serif, editorial)": "'Spectral', Georgia, serif",
+  "IBM Plex Sans (grotesk, functional)": "'IBM Plex Sans', Arial, sans-serif",
+  "Archivo (grotesk, bold)": "'Archivo', Arial, sans-serif",
+  "Space Grotesk (grotesk, geometric)": "'Space Grotesk', Arial, sans-serif",
+  "Inter (grotesk, neutral)": "'Inter', Arial, sans-serif",
+};
+
+const ACCENTS = [
+  { name: "Falu red",    hex: "#9A3324" },
+  { name: "Dalarna gold",hex: "#C79A3C" },
+  { name: "Lingon",      hex: "#A6335C" },
+  { name: "Spruce",      hex: "#3E6259" },
+  { name: "Cobalt",      hex: "#3457D5" },
+  { name: "Birch rust",  hex: "#B5652F" },
+];
+
+const MOODS = {
+  "Winter evening": { bg: "#1B2430", panel: "#232E3D", text: "#EDE7DA", dim: "#9AA4B2" },
+  "Birch paper":    { bg: "#F3EFE4", panel: "#FFFFFF", text: "#2B2A26", dim: "#6E6A5E" },
+  "Archive grey":   { bg: "#E7E5E0", panel: "#F6F5F2", text: "#211F1C", dim: "#716D64" },
+  "Midnight ink":   { bg: "#0E1116", panel: "#171B22", text: "#E6E6E6", dim: "#767C87" },
+};
+
+const PRESETS = [
+  {
+    name: "Winter Study",
+    mood: "Winter evening", accent: "Falu red",
+    bodyFont: "Fraunces (serif, warm display)", uiFont: "IBM Plex Sans (grotesk, functional)",
+    surface: "Floating card", radius: 14,
+  },
+  {
+    name: "Birch & Fika",
+    mood: "Birch paper", accent: "Dalarna gold",
+    bodyFont: "Lora (serif, gentle)", uiFont: "Archivo (grotesk, bold)",
+    surface: "Full bleed", radius: 8,
+  },
+  {
+    name: "Nordic Functionalist",
+    mood: "Archive grey", accent: "Cobalt",
+    bodyFont: "IBM Plex Sans (grotesk, functional)", uiFont: "Space Grotesk (grotesk, geometric)",
+    surface: "Full bleed", radius: 2,
+  },
+  {
+    name: "Midnight Fika",
+    mood: "Midnight ink", accent: "Lingon",
+    bodyFont: "Spectral (serif, editorial)", uiFont: "Inter (grotesk, neutral)",
+    surface: "Floating card", radius: 16,
+  },
+];
+
+const DEFAULTS = PRESETS[0];
+
+const state = {
+  mood: DEFAULTS.mood,
+  accent: DEFAULTS.accent,
+  bodyFont: DEFAULTS.bodyFont,
+  uiFont: DEFAULTS.uiFont,
+  surface: DEFAULTS.surface,
+  radius: DEFAULTS.radius,
+  presetName: DEFAULTS.name,
+};
+
+const SAMPLE_WORDS = ["Jag","vaknar","tidigt","och","dricker","kaffe","vid","köksbordet","medan","snön","faller","utanför","fönstret"];
+const HIGHLIGHTED = new Set(["vaknar","köksbordet","snön"]);
+const VOCAB = ["vakna","kaffe","snö","fönster","köksbord"];
+
+function el(tag, props, children) {
+  const e = document.createElement(tag);
+  Object.assign(e, props || {});
+  (children || []).forEach(c => e.appendChild(c));
+  return e;
+}
+
+function buildStaticControls() {
+  const presetsEl = document.getElementById("presets");
+  PRESETS.forEach(p => {
+    const b = el("button", { className: "preset-btn", textContent: p.name, onclick: () => applyPreset(p) });
+    b.dataset.name = p.name;
+    presetsEl.appendChild(b);
+  });
+
+  const moodEl = document.getElementById("mood-toggle");
+  Object.keys(MOODS).forEach(m => {
+    const b = el("button", { className: "toggle-btn", textContent: m.split(" ")[0], onclick: () => { state.mood = m; state.presetName = null; updateAll(); } });
+    b.dataset.val = m;
+    moodEl.appendChild(b);
+  });
+
+  const accentEl = document.getElementById("accent-swatches");
+  ACCENTS.forEach(a => {
+    const b = el("button", { className: "swatch", title: a.name, onclick: () => { state.accent = a.name; state.presetName = null; updateAll(); } });
+    b.style.background = a.hex;
+    b.dataset.val = a.name;
+    accentEl.appendChild(b);
+  });
+
+  const bodyFontEl = document.getElementById("font-body");
+  const uiFontEl = document.getElementById("font-ui");
+  Object.keys(FONT_STACKS).forEach(f => {
+    bodyFontEl.appendChild(el("option", { value: f, textContent: f }));
+    uiFontEl.appendChild(el("option", { value: f, textContent: f }));
+  });
+  bodyFontEl.onchange = () => { state.bodyFont = bodyFontEl.value; state.presetName = null; updateAll(); };
+  uiFontEl.onchange = () => { state.uiFont = uiFontEl.value; state.presetName = null; updateAll(); };
+
+  const surfaceEl = document.getElementById("surface-toggle");
+  ["Floating card", "Full bleed"].forEach(s => {
+    const b = el("button", { className: "toggle-btn", textContent: s, onclick: () => { state.surface = s; state.presetName = null; updateAll(); } });
+    b.dataset.val = s;
+    surfaceEl.appendChild(b);
+  });
+
+  document.getElementById("radius").oninput = (e) => {
+    state.radius = Number(e.target.value);
+    state.presetName = null;
+    updateAll();
+  };
+}
+
+function applyPreset(p) {
+  state.mood = p.mood;
+  state.accent = p.accent;
+  state.bodyFont = p.bodyFont;
+  state.uiFont = p.uiFont;
+  state.surface = p.surface;
+  state.radius = p.radius;
+  state.presetName = p.name;
+  updateAll();
+}
+
+function renderReaderText() {
+  const container = document.getElementById("reader-text");
+  container.innerHTML = "";
+  SAMPLE_WORDS.forEach((w, i) => {
+    const span = el("span", {
+      className: "word" + (HIGHLIGHTED.has(w) ? " hl" : ""),
+      textContent: w,
+    });
+    container.appendChild(span);
+    if (i < SAMPLE_WORDS.length - 1) container.appendChild(document.createTextNode(" "));
+  });
+}
+
+function renderVocabStrip(accentHex) {
+  const strip = document.getElementById("vocab-strip");
+  strip.innerHTML = "";
+  VOCAB.forEach(v => {
+    const chip = el("div", { className: "vocab-chip", textContent: v });
+    chip.style.background = accentHex + "22";
+    chip.style.color = accentHex;
+    strip.appendChild(chip);
+  });
+}
+
+function renderSidePanel(accentHex, mood) {
+  const panel = document.getElementById("side-panel");
+  panel.innerHTML = "";
+  panel.appendChild(el("div", { className: "lemma", textContent: "köksbordet" }));
+
+  const posEl = el("div", { className: "pos", textContent: "noun · ett-word, definite" });
+  posEl.style.color = mood.dim;
+  panel.appendChild(posEl);
+
+  panel.appendChild(el("div", { className: "meaning", textContent: "the kitchen table" }));
+
+  [["Singular","köksbord"],["Definite","köksbordet"],["Plural","köksbord"],["Def. plural","köksborden"]].forEach(([k,v]) => {
+    const row = el("div", { className: "grammar-row" });
+    row.style.borderTop = `1px solid ${mood.text}22`;
+    const keyEl = el("span", { textContent: k });
+    keyEl.style.color = mood.dim;
+    row.appendChild(keyEl);
+    const valEl = el("span", { textContent: v });
+    valEl.style.color = accentHex;
+    row.appendChild(valEl);
+    panel.appendChild(row);
+  });
+}
+
+function renderPreview() {
+  const mood = MOODS[state.mood];
+  const accent = ACCENTS.find(a => a.name === state.accent);
+  const bodyStack = FONT_STACKS[state.bodyFont];
+  const uiStack = FONT_STACKS[state.uiFont];
+  const isFloating = state.surface === "Floating card";
+
+  const app = document.getElementById("app");
+  app.style.background = mood.bg;
+  app.style.color = mood.text;
+  app.style.fontFamily = uiStack;
+  app.style.setProperty("--radius", state.radius + "px");
+  app.style.borderRadius = state.radius + "px";
+
+  document.querySelector(".nav").style.borderBottom = `1px solid ${mood.text}22`;
+  document.querySelector(".nav-right").style.color = mood.dim;
+  document.querySelectorAll(".nav-link").forEach(n => n.style.color = mood.dim);
+  document.querySelector(".nav-link.current").style.color = mood.text;
+
+  document.querySelector(".reader-title").style.color = mood.dim;
+  document.querySelector(".reader-text").style.fontFamily = bodyStack;
+  document.querySelector(".reader-text").style.color = mood.text;
+
+  document.querySelectorAll(".word.hl").forEach(w => {
+    w.style.background = accent.hex + "33";
+    w.style.color = mood.text;
+  });
+  document.querySelectorAll(".word:not(.hl)").forEach(w => { w.style.background = "transparent"; });
+
+  const sidePanel = document.querySelector(".side-panel");
+  const readerCol = document.querySelector(".reader-col");
+
+  if (isFloating) {
+    sidePanel.style.background = mood.panel;
+    sidePanel.style.borderRadius = Math.max(state.radius - 4, 0) + "px";
+    sidePanel.style.margin = "28px 28px 28px 0";
+    sidePanel.style.boxShadow = `0 4px 24px rgba(0,0,0,0.18)`;
+    readerCol.style.background = "transparent";
+  } else {
+    sidePanel.style.background = mood.panel;
+    sidePanel.style.borderRadius = "0px";
+    sidePanel.style.margin = "0";
+    sidePanel.style.boxShadow = "none";
+    sidePanel.style.borderLeft = `1px solid ${mood.text}1a`;
+    readerCol.style.background = "transparent";
+  }
+
+  renderVocabStrip(accent.hex);
+  renderSidePanel(accent.hex, mood);
+
+  document.getElementById("radius-val").textContent = state.radius + "px";
+}
+
+function updatePromptUI() {
+  document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("active", b.dataset.name === state.presetName));
+  document.querySelectorAll("#mood-toggle .toggle-btn").forEach(b => b.classList.toggle("active", b.dataset.val === state.mood));
+  document.querySelectorAll("#accent-swatches .swatch").forEach(b => b.classList.toggle("active", b.dataset.val === state.accent));
+  document.querySelectorAll("#surface-toggle .toggle-btn").forEach(b => b.classList.toggle("active", b.dataset.val === state.surface));
+  document.getElementById("font-body").value = state.bodyFont;
+  document.getElementById("font-ui").value = state.uiFont;
+  document.getElementById("radius").value = state.radius;
+}
+
+function updatePrompt() {
+  const mood = MOODS[state.mood];
+  const accent = ACCENTS.find(a => a.name === state.accent);
+  const parts = [];
+
+  parts.push(`Redesign the app around a "${state.mood}" mood: background ${mood.bg}, surface ${mood.panel}, text ${mood.text}, muted/secondary text ${mood.dim}.`);
+  parts.push(`Use ${accent.name} (${accent.hex}) as the single accent color — for highlighted words, links, active nav state, and grammar values. Don't introduce other accent colors.`);
+  parts.push(`Body/reading text font: ${state.bodyFont.split(" (")[0]} (CSS stack: ${FONT_STACKS[state.bodyFont]}). UI/navigation font: ${state.uiFont.split(" (")[0]} (CSS stack: ${FONT_STACKS[state.uiFont]}).`);
+  if (state.surface === "Floating card") {
+    parts.push(`Render the word-lookup side panel (and bottom sheet on mobile) as a distinct floating surface with its own background color and a soft shadow, set apart from the page background — like a lit card against the darker/lighter page.`);
+  } else {
+    parts.push(`Render the word-lookup side panel as a full-bleed column flush against the reading area, separated only by a hairline border, no shadow or card treatment.`);
+  }
+  parts.push(`Corner roundness: ${state.radius}px radius on cards/panels/buttons (${state.radius <= 4 ? "sharp, architectural" : state.radius >= 14 ? "soft, pillowy" : "moderate"}).`);
+  parts.push(`Keep the accent used sparingly — on highlighted vocabulary words, the active nav link, buttons, and grammar table values — not as a wash across large areas.`);
+
+  document.getElementById("prompt-text").textContent = parts.join(" ");
+}
+
+function updateAll() {
+  renderPreview();
+  updatePromptUI();
+  updatePrompt();
+}
+
+function flashCopied(ok) {
+  const btn = document.getElementById("copy-btn");
+  const orig = btn.textContent;
+  btn.textContent = ok ? "Copied!" : "Couldn't copy — select & copy manually";
+  setTimeout(() => { btn.textContent = orig; }, ok ? 1200 : 2500);
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch { ok = false; }
+  document.body.removeChild(ta);
+  return ok;
+}
+
+function copyPrompt() {
+  const text = document.getElementById("prompt-text").textContent;
+
+  if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+    navigator.clipboard.writeText(text)
+      .then(() => flashCopied(true))
+      .catch(() => flashCopied(fallbackCopy(text)));
+  } else {
+    flashCopied(fallbackCopy(text));
+  }
+
+  // Always also select the text in the box, so manual copy (Ctrl/Cmd+C) works
+  // as a visible last resort regardless of what the button did.
+  const range = document.createRange();
+  range.selectNodeContents(document.getElementById("prompt-text"));
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+try {
+  buildStaticControls();
+  renderReaderText();
+  applyPreset(DEFAULTS);
+} catch (err) {
+  document.getElementById("prompt-text").textContent =
+    "Playground failed to load: " + err.message;
+  document.getElementById("prompt-text").style.color = "#e07a5f";
+}
+</script>
+</body>
+</html>

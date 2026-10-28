@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Cog6ToothIcon } from "@heroicons/react/24/outline";
 import { Badge, Button, Popover, PopoverContent, PopoverTitle, PopoverTrigger, Switch } from "@tessera/ui";
 import { getStoredSparkle, setStoredSparkle } from "@/lib/sparkle";
+import { speak } from "@/lib/speech";
+import { getStoredVoice, setStoredVoice, type Voice } from "@/lib/voice";
 import {
   getResolvedTheme,
   getStoredPrimary,
@@ -28,12 +30,14 @@ export default function SettingsMenu({
   const [sparkle, setSparkle] = useState(false);
   const [theme, setTheme] = useState<Theme>("light");
   const [primary, setPrimary] = useState<PrimaryTheme>("carnelian");
+  const [voice, setVoice] = useState<Voice>("female");
 
   useLayoutEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSparkle(getStoredSparkle());
     setTheme(getResolvedTheme());
     setPrimary(getStoredPrimary());
+    setVoice(getStoredVoice());
   }, []);
 
   function toggleDark(checked: boolean) {
@@ -50,6 +54,12 @@ export default function SettingsMenu({
   function choosePrimary(next: PrimaryTheme) {
     setStoredPrimary(next);
     setPrimary(next);
+  }
+
+  function chooseVoice(next: Voice) {
+    setStoredVoice(next);
+    setVoice(next);
+    speak("Hej! Så här låter jag.");
   }
 
   return (
@@ -85,6 +95,23 @@ export default function SettingsMenu({
                 }`}
                 style={{ backgroundColor: t.swatch }}
               />
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <span className="text-sm">Reading voice</span>
+          <div className="flex gap-2">
+            {(["female", "male"] as const).map((v) => (
+              <Button
+                key={v}
+                variant={voice === v ? "solid" : "outline"}
+                size="sm"
+                aria-pressed={voice === v}
+                onClick={() => chooseVoice(v)}
+              >
+                {v === "female" ? "Female" : "Male"}
+              </Button>
             ))}
           </div>
         </div>

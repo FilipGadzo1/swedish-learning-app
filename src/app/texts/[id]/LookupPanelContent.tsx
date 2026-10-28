@@ -2,6 +2,7 @@
 
 import { Button } from "@tessera/ui";
 import ErrorMessage from "@/components/ErrorMessage";
+import SpeakButton from "@/components/SpeakButton";
 
 type LookupGrammar = Record<string, string>;
 
@@ -51,7 +52,10 @@ export default function LookupPanelContent({
 }) {
   return (
     <div>
-      <h2 className="font-serif text-xl font-semibold">{word}</h2>
+      <div className="flex items-center gap-1">
+        <h2 className="font-serif text-xl font-semibold">{word}</h2>
+        <SpeakButton text={word} />
+      </div>
 
       {loading && <p className="mt-2 text-sm text-muted-foreground">Looking up...</p>}
       {error && <ErrorMessage className="mt-2">{error}</ErrorMessage>}

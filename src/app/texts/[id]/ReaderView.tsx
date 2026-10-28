@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@tessera/ui";
+import ErrorMessage from "@/components/ErrorMessage";
 import { createClient } from "@/lib/supabase/client";
 import { tokenize } from "@/lib/tokenize";
 import { buildRenderUnits } from "@/lib/phrasalVerbs";
+import { useReadAloud } from "@/lib/useReadAloud";
 import { DEFAULT_SRS_STATE } from "@/lib/srs";
 import LookupPanelContent, { type LookupData } from "./LookupPanelContent";
 
@@ -24,6 +26,18 @@ export default function ReaderView({
   text: { id: string; title: string; content: string; source: string };
 }) {
   const tokens = tokenize(text.content);
+  const readAloud = useReadAloud(text.content);
+  // Word tokens inside the sentence currently being read aloud.
+  const activeBody = new Set<number>();
+  if (readAloud.range) {
+    let pos = 0;
+    tokens.forEach((t, i) => {
+      if (t.isWord && pos < readAloud.range!.end && pos + t.text.length > readAloud.range!.start) {
+        activeBody.add(i);
+      }
+      pos += t.text.length;
+    });
+  }
   const router = useRouter();
 
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -93,6 +107,7 @@ export default function ReaderView({
   }
 
   async function handleWordClick(word: string) {
+    readAloud.speakWord(word);
     clearPhraseSelection();
     activeWordRef.current = word;
     setSelectedWord(word);
@@ -150,6 +165,7 @@ export default function ReaderView({
   }
 
   async function handlePhraseClick(key: string, matchedText: string, words: string[]) {
+    readAloud.speakWord(matchedText);
     activeWordRef.current = null;
     setSelectedWord(null);
     setLookupData(null);
@@ -312,7 +328,7 @@ export default function ReaderView({
     clearPhraseSelection();
   }
 
-  function renderTokens(list: ReturnType<typeof tokenize>, keyPrefix: string) {
+  function renderTokens(list: ReturnType<typeof tokenize>, keyPrefix: string, active?: Set<number>) {
     return buildRenderUnits(list).map((unit) => {
       if (unit.kind === "token") {
         const token = list[unit.index];
@@ -322,7 +338,7 @@ export default function ReaderView({
             onClick={() => handleWordClick(token.text)}
             className={`cursor-pointer rounded px-0.5 hover:bg-accent/15 ${
               selectedWord === token.text ? "bg-accent/30" : ""
-            }`}
+            } ${active?.has(unit.index) ? "bg-accent/40" : ""}`}
           >
             {token.text}
           </span>
@@ -350,7 +366,9 @@ export default function ReaderView({
             token.isWord ? (
               <span
                 key={j}
-                className={`rounded group-hover:bg-accent/15 ${selected ? "bg-accent/30" : ""}`}
+                className={`rounded group-hover:bg-accent/15 ${selected ? "bg-accent/30" : ""} ${
+                  active?.has(unit.startIndex + j) ? "bg-accent/40" : ""
+                }`}
               >
                 {token.text}
               </span>
@@ -422,12 +440,18 @@ export default function ReaderView({
           <h1 className="font-serif text-2xl font-semibold">
             {renderTokens(tokenize(text.title), "title")}
           </h1>
-          <Button variant="outline" size="sm" onClick={handleCopy} className="shrink-0">
-            {copied ? "Copied!" : "Copy text"}
-          </Button>
+          <div className="flex shrink-0 gap-2">
+            <Button variant="outline" size="sm" onClick={readAloud.toggle}>
+              {readAloud.speaking ? "Stop" : "Listen"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleCopy}>
+              {copied ? "Copied!" : "Copy text"}
+            </Button>
+          </div>
         </div>
+        {readAloud.error && <ErrorMessage className="mb-4">{readAloud.error}</ErrorMessage>}
         <p className="font-serif text-lg leading-8 whitespace-pre-wrap">
-          {renderTokens(tokens, "body")}
+          {renderTokens(tokens, "body", activeBody)}
         </p>
         </div>
       </main>

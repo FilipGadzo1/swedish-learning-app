@@ -2,6 +2,7 @@
 // time; starting a new one ends the old one. Long texts are split into
 // sentence-sized chunks that play back to back, the next one fetched while
 // the current one plays.
+import { toaster } from "./toaster";
 import { getStoredVoice } from "./voice";
 
 export const WORD_RATE = 0.9;
@@ -60,6 +61,19 @@ export function chunkText(content: string): Chunk[] {
   return chunks;
 }
 
+class QuotaError extends Error {}
+
+// Every click would otherwise stack another identical toast.
+const QUOTA_TOAST_COOLDOWN_MS = 15_000;
+let lastQuotaToast = 0;
+
+function notifyQuotaReached() {
+  const now = Date.now();
+  if (now - lastQuotaToast < QUOTA_TOAST_COOLDOWN_MS) return;
+  lastQuotaToast = now;
+  toaster.add({ title: "Voice unavailable", description: "Limit reached", type: "warning" });
+}
+
 let session = 0;
 let currentAudio: HTMLAudioElement | null = null;
 let abortPlay: (() => void) | null = null;
@@ -80,6 +94,7 @@ async function fetchAudio(text: string, voice: string): Promise<string> {
   const res = await fetch(`/api/speak?text=${encodeURIComponent(text)}&voice=${voice}`);
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
+    if (body.code === "quota") throw new QuotaError();
     throw new Error(body.error ?? `Couldn't generate audio (${res.status})`);
   }
   return URL.createObjectURL(await res.blob());
@@ -139,7 +154,10 @@ export function speak(text: string, { rate = TEXT_RATE, onRange, onEnd, onError 
         if (id !== session) return;
       }
     } catch (err) {
-      if (id === session) onError?.(err instanceof Error ? err.message : "Couldn't play audio.");
+      if (id === session) {
+        if (err instanceof QuotaError) notifyQuotaReached();
+        else onError?.(err instanceof Error ? err.message : "Couldn't play audio.");
+      }
     } finally {
       urls.forEach((u) => URL.revokeObjectURL(u));
       if (id === session) finish();

@@ -6,6 +6,7 @@ import "./globals.css";
 import { THEME_INIT_SCRIPT, PRIMARY_INIT_SCRIPT } from "@/lib/theme";
 import NavBar from "@/components/NavBar";
 import SparkleEffects from "@/components/SparkleEffects";
+import AppToaster from "@/components/AppToaster";
 
 const lora = Lora({
   variable: "--font-lora",
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </Suspense>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-14 sm:pb-0">{children}</div>
         <SparkleEffects />
+        <AppToaster />
         <Analytics />
       </body>
     </html>

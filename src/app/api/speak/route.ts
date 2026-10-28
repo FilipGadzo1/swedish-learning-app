@@ -53,12 +53,14 @@ export async function GET(req: NextRequest) {
   if (!upstream.ok || !upstream.body) {
     // 401/402/429 all mean "key or quota problem" — nothing the user can fix.
     const quota = [401, 402, 429].includes(upstream.status);
+    if (quota) {
+      return NextResponse.json(
+        { error: "Voice quota reached for now — try again later.", code: "quota" },
+        { status: 503 },
+      );
+    }
     return NextResponse.json(
-      {
-        error: quota
-          ? "Voice quota reached for now — try again later."
-          : "Couldn't generate audio — please try again.",
-      },
+      { error: "Couldn't generate audio — please try again." },
       { status: 502 },
     );
   }

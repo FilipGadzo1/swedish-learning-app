@@ -36,10 +36,8 @@ export default function GuestDrillView() {
 
   useEffect(() => {
     function load() {
-      const now = new Date().toISOString();
-      const loaded = listGuestVocab()
-        .filter((v) => v.dueAt <= now)
-        .sort((a, b) => a.dueAt.localeCompare(b.dueAt));
+      // Least-recently-reviewed first, so practice naturally surfaces weaker words.
+      const loaded = listGuestVocab().sort((a, b) => a.dueAt.localeCompare(b.dueAt));
       setCards(loaded);
       setTotal(loaded.length);
     }
@@ -81,7 +79,7 @@ export default function GuestDrillView() {
   if (cards.length === 0) {
     return (
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-        <p className="font-serif text-lg">You&rsquo;re all caught up.</p>
+        <p className="font-serif text-lg">You&rsquo;ve practiced every word.</p>
         {confirmation && (
           <p role="status" className="text-xs text-muted-foreground">
             {confirmation}

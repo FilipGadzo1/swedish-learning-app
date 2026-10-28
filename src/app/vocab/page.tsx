@@ -14,7 +14,6 @@ export const instant = false;
 type VocabRow = {
   id: string;
   word: string;
-  due_at: string;
   dictionary_cache: { data: LookupData } | null;
 };
 
@@ -31,20 +30,19 @@ export default async function VocabPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("vocab_items")
-    .select("id, word, due_at, dictionary_cache(data)")
+    .select("id, word, dictionary_cache(data)")
+    // Least-recently-reviewed first, so practice naturally surfaces weaker words.
     .order("due_at", { ascending: true });
 
   const items = (data ?? []) as unknown as VocabRow[];
-  const now = new Date();
-  const dueCount = items.filter((i) => new Date(i.due_at) <= now).length;
 
   const header = (
     <>
       <div className="mb-4 flex items-center justify-between">
         <h1 className="font-serif text-xl font-semibold">Vocabulary</h1>
-        {dueCount > 0 && (
+        {items.length > 0 && (
           <Link href="/vocab/drill" className={buttonVariants()}>
-            Drill {dueCount} due word{dueCount === 1 ? "" : "s"}
+            Practice words
           </Link>
         )}
       </div>
@@ -63,22 +61,12 @@ export default async function VocabPage() {
     );
   }
 
-  // Due labels are computed here so the client table hydrates with
-  // server-formatted dates instead of re-running toLocaleDateString.
-  const rows = items.map((item) => {
-    const due = new Date(item.due_at);
-    const isDue = due <= now;
-    const lookup = item.dictionary_cache?.data ?? null;
-    return {
-      id: item.id,
-      word: item.word,
-      meanings: lookup?.englishMeanings ?? [],
-      isDue,
-      dueLabel: isDue ? "Due now" : due.toLocaleDateString(),
-      dueAt: item.due_at,
-      lookup,
-    };
-  });
+  const rows = items.map((item) => ({
+    id: item.id,
+    word: item.word,
+    meanings: item.dictionary_cache?.data?.englishMeanings ?? [],
+    lookup: item.dictionary_cache?.data ?? null,
+  }));
 
   return <VocabTableWithLookup items={rows}>{header}</VocabTableWithLookup>;
 }

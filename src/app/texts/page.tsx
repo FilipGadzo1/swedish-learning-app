@@ -22,16 +22,12 @@ export default async function TextsPage() {
   }
 
   const supabase = await createClient();
-  const [{ data: texts }, { count: wordCount }, { count: dueCount }] = await Promise.all([
+  const [{ data: texts }, { count: wordCount }] = await Promise.all([
     supabase
       .from("texts")
       .select("id, title, source, level, created_at, content")
       .order("created_at", { ascending: false }),
     supabase.from("vocab_items").select("id", { count: "exact", head: true }),
-    supabase
-      .from("vocab_items")
-      .select("id", { count: "exact", head: true })
-      .lte("due_at", new Date().toISOString()),
   ]);
 
   // Only the derived excerpt/reading time reach the client, not full content.
@@ -41,7 +37,6 @@ export default async function TextsPage() {
   }));
 
   const words = wordCount ?? 0;
-  const due = dueCount ?? 0;
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 p-6 2xl:max-w-6xl">
@@ -49,13 +44,14 @@ export default async function TextsPage() {
         Texts
         <span className="font-sans text-sm font-normal text-muted-foreground">
           · {rows.length} {rows.length === 1 ? "text" : "texts"} · {words}{" "}
-          {words === 1 ? "word" : "words"} saved ·{" "}
-          {due > 0 ? (
-            <Link href="/vocab/drill" className="text-accent hover:underline">
-              {due} due for review
-            </Link>
-          ) : (
-            `${due} due for review`
+          {words === 1 ? "word" : "words"} saved
+          {words > 0 && (
+            <>
+              {" · "}
+              <Link href="/vocab/drill" className="text-accent hover:underline">
+                Practice words
+              </Link>
+            </>
           )}
         </span>
       </h1>

@@ -7,7 +7,7 @@ import TextList, { type TextListItem } from "./TextList";
 import TextHero from "./TextHero";
 import { summarizeContent } from "./textSummary";
 
-type GuestTextsData = { rows: TextListItem[]; wordCount: number; dueCount: number };
+type GuestTextsData = { rows: TextListItem[]; wordCount: number };
 
 export default function GuestTextsView() {
   const [data, setData] = useState<GuestTextsData | null>(null);
@@ -15,14 +15,12 @@ export default function GuestTextsView() {
   useEffect(() => {
     function load() {
       const vocab = listGuestVocab();
-      const now = Date.now();
       setData({
         rows: listGuestTexts().map(({ content, ...t }) => ({
           ...t,
           ...summarizeContent(content),
         })),
         wordCount: vocab.length,
-        dueCount: vocab.filter((v) => new Date(v.dueAt).getTime() <= now).length,
       });
     }
     load();
@@ -30,7 +28,6 @@ export default function GuestTextsView() {
 
   const textCount = data?.rows.length ?? 0;
   const words = data?.wordCount ?? 0;
-  const due = data?.dueCount ?? 0;
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 p-6 2xl:max-w-6xl">
@@ -38,13 +35,14 @@ export default function GuestTextsView() {
         Texts
         <span className="font-sans text-sm font-normal text-muted-foreground">
           · {textCount} {textCount === 1 ? "text" : "texts"} · {words}{" "}
-          {words === 1 ? "word" : "words"} saved ·{" "}
-          {due > 0 ? (
-            <Link href="/vocab/drill" className="text-accent hover:underline">
-              {due} due for review
-            </Link>
-          ) : (
-            `${due} due for review`
+          {words === 1 ? "word" : "words"} saved
+          {words > 0 && (
+            <>
+              {" · "}
+              <Link href="/vocab/drill" className="text-accent hover:underline">
+                Practice words
+              </Link>
+            </>
           )}
         </span>
       </h1>

@@ -61,7 +61,7 @@ export default function DrillView() {
       const { data, error: fetchError } = await supabase
         .from("vocab_items")
         .select("id, word, srs_state, dictionary_cache(data)")
-        .lte("due_at", new Date().toISOString())
+        // Least-recently-reviewed first, so practice naturally surfaces weaker words.
         .order("due_at", { ascending: true });
 
       if (fetchError) {
@@ -134,7 +134,7 @@ export default function DrillView() {
   if (cards.length === 0) {
     return (
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-        <p className="font-serif text-lg">You&rsquo;re all caught up.</p>
+        <p className="font-serif text-lg">You&rsquo;ve practiced every word.</p>
         {confirmation && (
           <p role="status" className="text-xs text-muted-foreground">
             {confirmation}

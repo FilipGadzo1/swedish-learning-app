@@ -24,16 +24,13 @@ export default function GuestVocabView() {
 
   if (items === null) return null;
 
-  const now = new Date();
-  const dueCount = items.filter((i) => new Date(i.dueAt) <= now).length;
-
   const header = (
     <>
       <div className="mb-4 flex items-center justify-between">
         <h1 className="font-serif text-xl font-semibold">Vocabulary</h1>
-        {dueCount > 0 && (
+        {items.length > 0 && (
           <Link href="/vocab/drill" className={buttonVariants()}>
-            Drill {dueCount} due word{dueCount === 1 ? "" : "s"}
+            Practice words
           </Link>
         )}
       </div>
@@ -52,25 +49,18 @@ export default function GuestVocabView() {
     );
   }
 
-  const rows: VocabListRow[] = items.map((item) => {
-    const due = new Date(item.dueAt);
-    const isDue = due <= now;
-    return {
-      id: item.id,
-      word: item.word,
-      meanings: item.englishMeanings,
-      isDue,
-      dueLabel: isDue ? "Due now" : due.toLocaleDateString(),
-      dueAt: item.dueAt,
-      lookup: {
-        lemma: item.word,
-        partOfSpeech: item.partOfSpeech,
-        englishMeanings: item.englishMeanings,
-        notes: null,
-        grammar: item.grammar,
-      },
-    };
-  });
+  const rows: VocabListRow[] = items.map((item) => ({
+    id: item.id,
+    word: item.word,
+    meanings: item.englishMeanings,
+    lookup: {
+      lemma: item.word,
+      partOfSpeech: item.partOfSpeech,
+      englishMeanings: item.englishMeanings,
+      notes: null,
+      grammar: item.grammar,
+    },
+  }));
 
   return <VocabTableWithLookup items={rows}>{header}</VocabTableWithLookup>;
 }

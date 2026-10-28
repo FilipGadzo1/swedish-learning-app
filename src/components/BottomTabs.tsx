@@ -2,39 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ComponentProps } from "react";
-
-function TextsIcon(props: ComponentProps<"svg">) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z" />
-      <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5v-13Z" />
-    </svg>
-  );
-}
-
-function VocabIcon(props: ComponentProps<"svg">) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <rect x="3" y="7" width="15" height="11" rx="2" />
-      <path d="M6 4h12a2 2 0 0 1 2 2v9" />
-    </svg>
-  );
-}
-
-function GrammarIcon(props: ComponentProps<"svg">) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M12 4 2 9l10 5 10-5-10-5Z" />
-      <path d="M6 11v4.5c0 1.1 2.7 3 6 3s6-1.9 6-3V11" />
-    </svg>
-  );
-}
+import { AcademicCapIcon, BookOpenIcon, RectangleStackIcon } from "@heroicons/react/24/outline";
 
 const TABS = [
-  { href: "/texts", label: "Texts", Icon: TextsIcon },
-  { href: "/vocab", label: "Vocabulary", Icon: VocabIcon },
-  { href: "/grammar", label: "Grammar", Icon: GrammarIcon },
+  { href: "/texts", label: "Texts", Icon: BookOpenIcon },
+  { href: "/vocab", label: "Vocabulary", Icon: RectangleStackIcon },
+  { href: "/grammar", label: "Grammar", Icon: AcademicCapIcon },
 ];
 
 export default function BottomTabs() {

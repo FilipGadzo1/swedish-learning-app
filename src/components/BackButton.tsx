@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 
 function parentPath(pathname: string): string | null {
   if (pathname.startsWith("/texts/")) return "/texts";
@@ -23,17 +24,7 @@ export default function BackButton() {
       aria-label="Back"
       className="flex shrink-0 items-center text-muted-foreground hover:text-foreground"
     >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-4 w-4"
-      >
-        <path d="M15 18l-6-6 6-6" />
-      </svg>
+      <ChevronLeftIcon className="h-4 w-4" />
     </Link>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useState } from "react";
 import Link from "next/link";
+import { Cog6ToothIcon } from "@heroicons/react/24/outline";
 import { Badge, Button, Popover, PopoverContent, PopoverTitle, PopoverTrigger, Switch } from "@tessera/ui";
 import { getStoredSparkle, setStoredSparkle } from "@/lib/sparkle";
 import {
@@ -14,15 +15,6 @@ import {
   type Theme,
 } from "@/lib/theme";
 import SignOutButton from "./SignOutButton";
-
-function GearIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3 12.49H3a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
-    </svg>
-  );
-}
 
 export default function SettingsMenu({
   userEmail,
@@ -63,7 +55,7 @@ export default function SettingsMenu({
   return (
     <Popover>
       <PopoverTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Settings" />}>
-        <GearIcon />
+        <Cog6ToothIcon className="h-5 w-5" />
       </PopoverTrigger>
       <PopoverContent align="end" className="flex w-64 flex-col gap-4 p-4">
         <PopoverTitle className="text-sm font-semibold">Settings</PopoverTitle>

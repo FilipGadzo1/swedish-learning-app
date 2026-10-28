@@ -16,9 +16,11 @@ function extractJsonCandidate(text: string): string {
 async function lookupWord(word: string): Promise<unknown> {
   const message = await anthropic.messages.create({
     model: "claude-sonnet-5-5",
-    // Was 500 — too tight for a verb/adjective entry plus a "recognized: false"
-    // explanation, which could silently truncate mid-JSON and fail to parse.
-    max_tokens: 1024,
+    // claude-sonnet-5-5 thinks adaptively by default, and thinking tokens
+    // count against max_tokens — a tight cap here truncates the JSON output
+    // mid-generation whenever the model reasons before answering (same root
+    // cause as the generate-text route's B2 failures).
+    max_tokens: 3000,
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content: word }],
   });

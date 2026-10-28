@@ -52,7 +52,11 @@ export async function POST(req: NextRequest) {
 
   const message = await anthropic.messages.create({
     model: "claude-sonnet-5-5",
-    max_tokens: 1200,
+    // claude-sonnet-5-5 thinks adaptively by default, and thinking tokens
+    // count against max_tokens — a tight cap here truncates the JSON output
+    // mid-generation whenever the model reasons before writing (observed up
+    // to ~1900 combined tokens for B2 with a topic; this leaves real margin).
+    max_tokens: 6000,
     system: SYSTEM_PROMPT,
     messages: [
       {

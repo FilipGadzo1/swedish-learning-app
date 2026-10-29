@@ -105,7 +105,6 @@ export default function GuestReaderView({
   }
 
   async function handleWordClick(word: string) {
-    readAloud.speakWord(word);
     clearPhraseSelection();
     activeWordRef.current = word;
     setSelectedWord(word);
@@ -153,7 +152,6 @@ export default function GuestReaderView({
   }
 
   async function handlePhraseClick(key: string, matchedText: string, words: string[]) {
-    readAloud.speakWord(matchedText);
     activeWordRef.current = null;
     setSelectedWord(null);
     setLookupData(null);

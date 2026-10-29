@@ -252,6 +252,48 @@ export const GRAMMAR_LESSONS: GrammarLesson[] = [
     ),
   },
   {
+    slug: "future-tense",
+    title: "Future tense",
+    summary: "Talking about what will happen: ska, kommer att, and the plain present.",
+    body: (
+      <>
+        <p>
+          Swedish has no dedicated future verb ending. Instead, the future is built
+          with a helper verb plus the <strong>infinitive</strong>, or sometimes just
+          the present tense.
+        </p>
+        <p>
+          <strong>ska + infinitive</strong> expresses intention or a plan, like
+          English &ldquo;am going to&rdquo;: <em>Jag ska läsa boken</em> (I&rsquo;m going to read
+          the book).
+        </p>
+        <p>
+          <strong>kommer att + infinitive</strong> is a more neutral prediction of
+          what will happen, often outside the speaker&rsquo;s control: <em>Det kommer att
+          regna</em> (It will rain).
+        </p>
+        <ExampleTable
+          rows={[
+            ["Jag ska äta middag.", "I'm going to eat dinner."],
+            ["Hon kommer att komma sent.", "She will come late."],
+            ["Vi ska resa till Sverige.", "We're going to travel to Sweden."],
+            ["Det kommer att bli kallt.", "It's going to get cold."],
+          ]}
+        />
+        <p>
+          The <strong>present tense</strong> also works for the future, especially
+          with a time expression, just like English &ldquo;I&rsquo;m leaving tomorrow&rdquo;:{" "}
+          <em>Jag åker imorgon</em> (I&rsquo;m leaving tomorrow).
+        </p>
+        <p>
+          This is why the reader&rsquo;s verb panel shows a <em>Future</em> row: the
+          infinitive is all you need, with <em>ska</em> or <em>kommer att</em> in
+          front of it.
+        </p>
+      </>
+    ),
+  },
+  {
     slug: "word-order",
     title: "Word order: the V2 rule",
     summary: "The verb is always in second position — even when something else leads the sentence.",

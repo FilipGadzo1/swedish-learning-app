@@ -56,8 +56,9 @@ If partOfSpeech is "noun", grammar must be:
   "pluralIndefinite": string, "pluralDefinite": string }
 
 If partOfSpeech is "verb", grammar must be:
-{ "infinitive": string, "present": string, "past": string, "supine": string,
-  "imperative": string }
+{ "infinitive": string, "present": string, "past": string, "future": string,
+  "supine": string, "imperative": string }
+("future" uses "kommer att" or "ska" + infinitive, e.g. "kommer att äta")
 
 If partOfSpeech is "adjective", grammar must be:
 { "base": string, "neuter": string, "plural": string, "comparative": string, "superlative": string }
@@ -70,7 +71,7 @@ lookup target: "lemma" is the infinitive phrase (e.g. "ta bort"), "partOfSpeech"
 is "verb", "englishMeanings" translate the phrase as a whole, and "grammar" gives
 the phrase's conjugated forms with the particle included each time, e.g.
 { "infinitive": "ta bort", "present": "tar bort", "past": "tog bort",
-  "supine": "tagit bort", "imperative": "ta bort" }.
+  "future": "kommer att ta bort", "supine": "tagit bort", "imperative": "ta bort" }.
 
 Respond with raw JSON only — no markdown code fences, no explanation.`;
 
@@ -103,7 +104,14 @@ export async function POST(req: NextRequest) {
 
   // Cache rows written before "recognized" existed are stale — regenerate them
   // instead of serving data the UI can no longer make a correct decision from.
-  if (cached && typeof (cached.data as { recognized?: boolean }).recognized === "boolean") {
+  // Verb rows cached before "future" existed are stale for the same reason.
+  const cachedData = cached?.data as
+    | { recognized?: boolean; partOfSpeech?: string; grammar?: Record<string, string> }
+    | undefined;
+  const cacheIsCurrent =
+    typeof cachedData?.recognized === "boolean" &&
+    (cachedData.partOfSpeech !== "verb" || !!cachedData.grammar?.future);
+  if (cached && cacheIsCurrent) {
     return NextResponse.json(cached.data);
   }
 

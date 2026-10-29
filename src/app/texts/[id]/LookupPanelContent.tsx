@@ -24,6 +24,7 @@ const GRAMMAR_LABELS: Record<string, string> = {
   infinitive: "Infinitive",
   present: "Present",
   past: "Past",
+  future: "Future",
   supine: "Supine",
   imperative: "Imperative",
   base: "Base",

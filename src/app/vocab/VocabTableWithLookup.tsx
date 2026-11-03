@@ -14,24 +14,17 @@ import {
   TableHeader,
   TableRow,
 } from "@tessera/ui";
+import Link from "next/link";
 import LookupPanelContent, { type LookupData } from "@/app/texts/[id]/LookupPanelContent";
+import { POS_GROUPS, posGroupKey } from "@/lib/vocabCategories";
 
 export type VocabListRow = {
   id: string;
   word: string;
+  isHard?: boolean;
   meanings: string[];
   lookup: LookupData | null;
 };
-
-const POS_GROUPS = [
-  { key: "noun", label: "Nouns" },
-  { key: "verb", label: "Verbs" },
-  { key: "adjective", label: "Adjectives" },
-  { key: "adverb", label: "Adverbs" },
-  { key: "other", label: "Other" },
-] as const;
-
-const KNOWN_POS = new Set<string>(["noun", "verb", "adjective", "adverb"]);
 
 export default function VocabTableWithLookup({
   items,
@@ -45,10 +38,7 @@ export default function VocabTableWithLookup({
   const groups = POS_GROUPS.map((g) => ({
     ...g,
     items: items
-      .filter((item) => {
-        const pos = item.lookup?.partOfSpeech;
-        return g.key === "other" ? !KNOWN_POS.has(pos ?? "") : pos === g.key;
-      })
+      .filter((item) => posGroupKey(item.lookup?.partOfSpeech) === g.key)
       .sort((a, b) => a.word.localeCompare(b.word)),
   })).filter((g) => g.items.length > 0);
 
@@ -66,6 +56,20 @@ export default function VocabTableWithLookup({
       <main className="flex-1 overflow-y-auto p-6">
         <div className="mx-auto w-full max-w-2xl">
           {children}
+          {groups.length > 1 && (
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <span className="text-xs text-muted-foreground">Practice only:</span>
+              {groups.map((group) => (
+                <Link
+                  key={group.key}
+                  href={`/vocab/drill?pos=${group.key}&start=1`}
+                  className="rounded-full border border-hairline px-3 py-1 text-xs hover:bg-accent/15"
+                >
+                  {group.label} ({group.items.length})
+                </Link>
+              ))}
+            </div>
+          )}
           {groups.length === 0 ? (
             <Card className="px-4 py-6 text-center text-sm text-muted-foreground">
               No vocabulary yet.
@@ -95,7 +99,14 @@ export default function VocabTableWithLookup({
                               onClick={() => setSelected(item)}
                               className={`cursor-pointer ${isSelected ? "bg-accent/15 hover:bg-accent/15" : ""}`}
                             >
-                              <TableCell className="px-4 font-serif">{item.word}</TableCell>
+                              <TableCell className="px-4 font-serif">
+                                {item.word}
+                                {item.isHard && (
+                                  <span className="ml-1.5 text-accent" title="Hard word" aria-label="Hard word">
+                                    ★
+                                  </span>
+                                )}
+                              </TableCell>
                               <TableCell
                                 className={`px-4 ${isSelected ? "text-foreground" : "text-muted-foreground"}`}
                               >

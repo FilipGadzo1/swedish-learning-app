@@ -52,6 +52,7 @@ export default function GuestVocabView() {
   const rows: VocabListRow[] = items.map((item) => ({
     id: item.id,
     word: item.word,
+    isHard: item.isHard ?? false,
     meanings: item.englishMeanings,
     lookup: {
       lemma: item.word,

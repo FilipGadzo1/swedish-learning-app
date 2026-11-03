@@ -3,6 +3,8 @@ export type SrsState = {
   ef: number; // easiness factor
   interval: number; // days until next review
   repetitions: number;
+  // Times marked "didn't know it" in a drill; absent on older rows.
+  lapses?: number;
 };
 
 export const DEFAULT_SRS_STATE: SrsState = { ef: 2.5, interval: 0, repetitions: 0 };
@@ -23,6 +25,7 @@ export function nextSrsState(
   let ef = field(prev?.ef, DEFAULT_SRS_STATE.ef);
   let interval = field(prev?.interval, DEFAULT_SRS_STATE.interval);
   let repetitions = field(prev?.repetitions, DEFAULT_SRS_STATE.repetitions);
+  const lapses = field(prev?.lapses, 0);
   const quality = QUALITY[rating];
 
   if (quality < 3) {
@@ -40,5 +43,5 @@ export function nextSrsState(
   const dueAt = new Date();
   dueAt.setDate(dueAt.getDate() + interval);
 
-  return { state: { ef, interval, repetitions }, dueAt };
+  return { state: { ef, interval, repetitions, lapses }, dueAt };
 }

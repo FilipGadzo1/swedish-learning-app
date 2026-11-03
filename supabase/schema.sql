@@ -49,6 +49,9 @@ create table if not exists vocab_items (
   unique (profile_id, word)
 );
 
+-- Words flagged as hard (manually, or automatically after repeated misses in a drill)
+alter table vocab_items add column if not exists is_hard boolean not null default false;
+
 -- Links each vocab item to its cached dictionary/grammar entry (enables
 -- Supabase's nested-select join: vocab_items -> dictionary_cache). Words are
 -- only ever added to vocab via the lookup flow, so the cache entry always
@@ -92,6 +95,10 @@ create policy "texts insertable by owner" on texts
 drop policy if exists "texts updatable by owner" on texts;
 create policy "texts updatable by owner" on texts
   for update using (owner_id = auth.uid());
+
+drop policy if exists "texts deletable by owner" on texts;
+create policy "texts deletable by owner" on texts
+  for delete using (owner_id = auth.uid());
 
 drop policy if exists "highlights scoped to profile" on highlights;
 create policy "highlights scoped to profile" on highlights

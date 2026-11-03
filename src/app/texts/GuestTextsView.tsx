@@ -12,17 +12,21 @@ type GuestTextsData = { rows: TextListItem[]; wordCount: number };
 export default function GuestTextsView() {
   const [data, setData] = useState<GuestTextsData | null>(null);
 
+  function load() {
+    const vocab = listGuestVocab();
+    setData({
+      rows: listGuestTexts().map(({ content, ...t }) => ({
+        ...t,
+        ...summarizeContent(content),
+      })),
+      wordCount: vocab.length,
+    });
+  }
+
   useEffect(() => {
-    function load() {
-      const vocab = listGuestVocab();
-      setData({
-        rows: listGuestTexts().map(({ content, ...t }) => ({
-          ...t,
-          ...summarizeContent(content),
-        })),
-        wordCount: vocab.length,
-      });
-    }
+    // Mount-only sync from localStorage (an external source); `load` is also
+    // called from TextList's onDeleted callback, outside any effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, []);
 
@@ -47,7 +51,7 @@ export default function GuestTextsView() {
         </span>
       </h1>
       <TextHero guest />
-      <TextList texts={data?.rows ?? []} />
+      <TextList texts={data?.rows ?? []} guest onDeleted={load} />
     </main>
   );
 }

@@ -24,6 +24,7 @@ export type GuestVocabItem = {
   srsState: SrsState;
   dueAt: string;
   sourceTextId: string | null;
+  isHard?: boolean;
   createdAt: string;
 };
 
@@ -92,6 +93,18 @@ export function addGuestText(text: Omit<GuestText, "id" | "created_at">): GuestT
   return full;
 }
 
+export function deleteGuestText(id: string) {
+  writeJson(
+    TEXTS_KEY,
+    listGuestTexts().filter((t) => t.id !== id),
+  );
+  // Same as the DB's on delete set null: saved words outlive their source text.
+  writeJson(
+    VOCAB_KEY,
+    listGuestVocab().map((v) => (v.sourceTextId === id ? { ...v, sourceTextId: null } : v)),
+  );
+}
+
 export function listGuestVocab(): GuestVocabItem[] {
   return readJson<GuestVocabItem[]>(VOCAB_KEY, []);
 }
@@ -110,10 +123,22 @@ export function addGuestVocab(item: Omit<GuestVocabItem, "id" | "createdAt">) {
   writeJson(VOCAB_KEY, [...listGuestVocab(), full]);
 }
 
-export function updateGuestVocabSrs(id: string, srsState: SrsState, dueAt: string) {
+export function updateGuestVocab(
+  id: string,
+  patch: { srsState?: SrsState; dueAt?: string; isHard?: boolean },
+) {
   writeJson(
     VOCAB_KEY,
-    listGuestVocab().map((v) => (v.id === id ? { ...v, srsState, dueAt } : v)),
+    listGuestVocab().map((v) =>
+      v.id === id
+        ? {
+            ...v,
+            ...(patch.srsState && { srsState: patch.srsState }),
+            ...(patch.dueAt && { dueAt: patch.dueAt }),
+            ...(patch.isHard !== undefined && { isHard: patch.isHard }),
+          }
+        : v,
+    ),
   );
 }
 

@@ -14,6 +14,7 @@ export const instant = false;
 type VocabRow = {
   id: string;
   word: string;
+  is_hard: boolean;
   dictionary_cache: { data: LookupData } | null;
 };
 
@@ -30,7 +31,7 @@ export default async function VocabPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("vocab_items")
-    .select("id, word, dictionary_cache(data)")
+    .select("id, word, is_hard, dictionary_cache(data)")
     // Least-recently-reviewed first, so practice naturally surfaces weaker words.
     .order("due_at", { ascending: true });
 
@@ -64,6 +65,7 @@ export default async function VocabPage() {
   const rows = items.map((item) => ({
     id: item.id,
     word: item.word,
+    isHard: item.is_hard,
     meanings: item.dictionary_cache?.data?.englishMeanings ?? [],
     lookup: item.dictionary_cache?.data ?? null,
   }));

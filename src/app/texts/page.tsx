@@ -25,15 +25,16 @@ export default async function TextsPage() {
   const [{ data: texts }, { count: wordCount }] = await Promise.all([
     supabase
       .from("texts")
-      .select("id, title, source, level, created_at, content")
+      .select("id, title, source, level, created_at, content, owner_id")
       .order("created_at", { ascending: false }),
     supabase.from("vocab_items").select("id", { count: "exact", head: true }),
   ]);
 
   // Only the derived excerpt/reading time reach the client, not full content.
-  const rows = (texts ?? []).map(({ content, ...t }) => ({
+  const rows = (texts ?? []).map(({ content, owner_id, ...t }) => ({
     ...t,
     ...summarizeContent(content ?? ""),
+    deletable: owner_id === userData.user.id,
   }));
 
   const words = wordCount ?? 0;

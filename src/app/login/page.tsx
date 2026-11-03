@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@tessera/ui";
 import { createClient } from "@/lib/supabase/client";
 import { enterGuestMode } from "@/lib/guest";
@@ -43,7 +44,10 @@ export default function LoginPage() {
       </Button>
       <p className="max-w-sm text-center text-xs text-muted-foreground">
         Guest data stays only in this browser and is lost if you clear site
-        data — it never syncs to an account.
+        data — it never syncs to an account.{" "}
+        <Link href="/privacy" className="underline hover:text-foreground">
+          Privacy
+        </Link>
       </p>
     </main>
   );

@@ -14,6 +14,16 @@ create table if not exists dictionary_cache (
   created_at timestamptz not null default now()
 );
 
+-- Context-aware lookup cache (shared across all users). Keyed by
+-- "<word>|<sha1 of sentence>" so a word clicked inside a sentence gets the
+-- reading that fits that sentence (e.g. "åt" = preposition, not past of "äta")
+-- without colliding with the context-free entries in dictionary_cache.
+create table if not exists contextual_lookup_cache (
+  key text primary key,
+  data jsonb not null,
+  created_at timestamptz not null default now()
+);
+
 -- Texts (imported PDFs, generated beginner material, pasted text)
 create table if not exists texts (
   id uuid primary key default gen_random_uuid(),
@@ -83,6 +93,7 @@ alter table highlights enable row level security;
 alter table vocab_items enable row level security;
 alter table lesson_progress enable row level security;
 alter table dictionary_cache enable row level security;
+alter table contextual_lookup_cache enable row level security;
 
 drop policy if exists "texts readable by owner or shared" on texts;
 create policy "texts readable by owner or shared" on texts
@@ -120,6 +131,14 @@ drop policy if exists "dictionary cache writable by anyone authenticated" on dic
 drop policy if exists "dictionary cache writable by anyone" on dictionary_cache;
 create policy "dictionary cache writable by anyone" on dictionary_cache
   for insert with check (true); -- non-sensitive shared cache; same data for every user/guest
+
+drop policy if exists "contextual cache readable by anyone" on contextual_lookup_cache;
+create policy "contextual cache readable by anyone" on contextual_lookup_cache
+  for select using (true);
+
+drop policy if exists "contextual cache writable by anyone" on contextual_lookup_cache;
+create policy "contextual cache writable by anyone" on contextual_lookup_cache
+  for insert with check (true); -- non-sensitive shared cache, same as dictionary_cache
 
 -- Force PostgREST to pick up schema changes (new tables/constraints) right
 -- away, instead of waiting for its own cache to refresh on its own schedule.

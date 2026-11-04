@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@tessera/ui";
 import ErrorMessage from "@/components/ErrorMessage";
-import { tokenize } from "@/lib/tokenize";
+import { sentenceAround, tokenize } from "@/lib/tokenize";
 import { buildRenderUnits } from "@/lib/phrasalVerbs";
 import { useReadAloud } from "@/lib/useReadAloud";
 import { isGuestVocabWord, addGuestVocab } from "@/lib/guest";
@@ -78,21 +78,27 @@ export default function GuestReaderView({
     }
   }
 
-  async function fetchLookup(word: string): Promise<LookupData> {
-    const cached = lookupCacheRef.current.get(word.toLowerCase());
+  // Keyed by word + sentence: the same spelling can mean different things in
+  // different sentences (e.g. "åt" = preposition vs past of "äta").
+  function lookupKey(word: string, sentence: string) {
+    return `${word.toLowerCase()}|${sentence}`;
+  }
+
+  async function fetchLookup(word: string, sentence: string): Promise<LookupData> {
+    const cacheKey = lookupKey(word, sentence);
+    const cached = lookupCacheRef.current.get(cacheKey);
     if (cached) return cached;
     const res = await fetch("/api/lookup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ word }),
+      body: JSON.stringify({ word, sentence }),
     });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       throw new Error(body.error ?? `Lookup failed (${res.status})`);
     }
     const data: LookupData = await res.json();
-    lookupCacheRef.current.set(word.toLowerCase(), data);
-    lookupCacheRef.current.set(data.lemma.toLowerCase(), data);
+    lookupCacheRef.current.set(cacheKey, data);
     return data;
   }
 
@@ -104,14 +110,14 @@ export default function GuestReaderView({
     setSubWords([]);
   }
 
-  async function handleWordClick(word: string) {
+  async function handleWordClick(word: string, sentence: string) {
     clearPhraseSelection();
     activeWordRef.current = word;
     setSelectedWord(word);
     setError(null);
     setAddedVocab(false);
 
-    const cached = lookupCacheRef.current.get(word.toLowerCase());
+    const cached = lookupCacheRef.current.get(lookupKey(word, sentence));
     if (cached) {
       setLookupData(cached);
       setLoading(false);
@@ -123,18 +129,7 @@ export default function GuestReaderView({
     setLoading(true);
 
     try {
-      const res = await fetch("/api/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ word }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? `Lookup failed (${res.status})`);
-      }
-      const data: LookupData = await res.json();
-      lookupCacheRef.current.set(word.toLowerCase(), data);
-      lookupCacheRef.current.set(data.lemma.toLowerCase(), data);
+      const data = await fetchLookup(word, sentence);
       if (activeWordRef.current !== word) return;
       setLookupData(data);
       if (isGuestVocabWord(data.lemma.toLowerCase())) setAddedVocab(true);
@@ -151,7 +146,12 @@ export default function GuestReaderView({
     setSubWords((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
   }
 
-  async function handlePhraseClick(key: string, matchedText: string, words: string[]) {
+  async function handlePhraseClick(
+    key: string,
+    matchedText: string,
+    words: string[],
+    sentence: string,
+  ) {
     activeWordRef.current = null;
     setSelectedWord(null);
     setLookupData(null);
@@ -170,7 +170,7 @@ export default function GuestReaderView({
 
     const phraseTask = (async () => {
       try {
-        const data = await fetchLookup(matchedText);
+        const data = await fetchLookup(matchedText, sentence);
         if (activePhraseRef.current !== key) return;
         setPhraseData(data);
         if (isGuestVocabWord(data.lemma.toLowerCase())) setPhraseAddedVocab(true);
@@ -185,7 +185,7 @@ export default function GuestReaderView({
 
     const subWordTasks = words.map(async (word, index) => {
       try {
-        const data = await fetchLookup(word);
+        const data = await fetchLookup(word, sentence);
         if (activePhraseRef.current !== key) return;
         updateSubWord(index, {
           data,
@@ -274,7 +274,7 @@ export default function GuestReaderView({
         return token.isWord ? (
           <span
             key={unit.index}
-            onClick={() => handleWordClick(token.text)}
+            onClick={() => handleWordClick(token.text, sentenceAround(list, unit.index))}
             className={`cursor-pointer rounded px-0.5 hover:bg-accent/15 ${
               selectedWord === token.text ? "bg-accent/30" : ""
             } ${active?.has(unit.index) ? "bg-accent/40" : ""}`}
@@ -298,6 +298,7 @@ export default function GuestReaderView({
               phraseKey,
               unit.matchedText,
               members.filter((t) => t.isWord).map((t) => t.text),
+              sentenceAround(list, unit.startIndex),
             )
           }
         >

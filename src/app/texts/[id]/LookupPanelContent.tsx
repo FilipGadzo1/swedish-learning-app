@@ -1,5 +1,6 @@
 "use client";
 
+import { LightBulbIcon } from "@heroicons/react/24/outline";
 import { Button } from "@tessera/ui";
 import ErrorMessage from "@/components/ErrorMessage";
 import SpeakButton from "@/components/SpeakButton";
@@ -11,6 +12,9 @@ export type LookupData = {
   partOfSpeech: string;
   englishMeanings: string[];
   notes: string | null;
+  // Set when the sentence the word was clicked in changes its reading
+  // (homograph, idiom, ...). Only present on in-sentence lookups.
+  contextNote?: string | null;
   grammar: LookupGrammar;
   recognized?: boolean;
 };
@@ -67,6 +71,19 @@ export default function LookupPanelContent({
             {data.partOfSpeech}
           </p>
           <p className="font-serif text-base">{data.englishMeanings.join(", ")}</p>
+
+          {data.contextNote && (
+            <div
+              role="note"
+              className="rounded-md border border-accent/40 border-l-4 border-l-accent bg-accent/10 p-3"
+            >
+              <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-accent">
+                <LightBulbIcon className="h-4 w-4" aria-hidden="true" />
+                Meaning in this sentence
+              </p>
+              <p className="text-sm text-foreground">{data.contextNote}</p>
+            </div>
+          )}
 
           {Object.keys(data.grammar).length > 0 && (
             <table className="w-full text-xs">
